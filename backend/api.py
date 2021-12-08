@@ -23,6 +23,7 @@ class UsersLogIn(db.Model):
     password = db.Column(db.String(80), unique=False, nullable=False)
 
     user_information = db.relationship("UserInfo", backref='users_login', uselist=False)
+    
     def __repr__(self) -> str:
         return '<User %r>' % self.username
 
@@ -31,9 +32,10 @@ class UserInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users_login.id'))
-    team_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    team_id = db.Column(db.Integer, unique=False, nullable=False)
     #many to 1
-    team_id = db.relationship('Teams', backref = 'team_names.id')
+    #team_id = db.relationship('Teams', backref = 'team_names.id')
+    # user_login = db.relationship('UsersLogIn', )
     
     def __repr__(self) -> str:
         return '<User %r>' % self.name
@@ -69,3 +71,19 @@ class Messages(db.Model):
     from_user = db.Column(db.String(80), unique=False, nullable=False)
     to_user = db.Column(db.String(80), unique=False, nullable=False)
     msg = db.Column(db.String(500), unique=False, nullable=False)
+
+db.create_all()
+
+admin.add_view(ModelView(UsersLogIn, db.session))
+admin.add_view(ModelView(UserInfo, db.session))
+admin.add_view(ModelView(Teams, db.session))
+admin.add_view(ModelView(TicketTracker, db.session))
+admin.add_view(ModelView(Comments, db.session))
+admin.add_view(ModelView(Messages, db.session))
+
+@app.route('/')
+def home():
+    return 'welcome'
+
+if __name__ == '__main__':
+    app.run(debug=True)
