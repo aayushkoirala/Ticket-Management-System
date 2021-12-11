@@ -44,30 +44,27 @@ class UserInfo(db.Model):
 class Teams(db.Model):
     __tablename__ = 'team_names'
     id = db.Column(db.Integer, primary_key=True)
-    team_name = db.Column(db.String(80), unique=True, nullable=False)
+    team_name = db.Column(db.String(80),unique=True, nullable=False)
     users = db.relationship("UserInfo", lazy='dynamic')
-    # tickets = db.relationship("TicketTracker", lazy='dynamic')
+    tickets = db.relationship("TicketTracker", lazy='dynamic')
     def __repr__(self) -> str:
         return '<User %r>' % self.team_name
 
 class TicketTracker(db.Model):
     __tablename__ = 'ticket_tracker'
     id = db.Column(db.Integer, primary_key=True)
-    ticket_number = db.Column(db.Integer, unique=False, nullable=False) #not sure if too make it string or int... string can be unique, int we have too keep track of the last number.... 
+
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'))
-    #assigned_department_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
+    assigned_department_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
     due_date = db.Column(db.DateTime, nullable=False)
     created_date  = db.Column(db.DateTime, nullable=False) 
     status = db.Column(db.String(80), unique=False, nullable=False)
     description = db.Column(db.String(600), unique=False, nullable=False)
     
-    # user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'))
-    # user = db.relationship('UserInfo')
-    
-    # team_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
-    # team = db.relationship('Teams')
-    comments = db.relationship('Comments', backref='ticket_tracker',lazy='dynamic')
 
+    
+    comments = db.relationship('Comments', backref='ticket_tracker',lazy='dynamic')
+    
 class Comments(db.Model):
     __tablename__ = 'comments'
     id = db.Column(db.Integer, primary_key=True)
