@@ -38,6 +38,7 @@ class UserInfo(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
     team = db.relationship('Teams')
     ticket = db.relationship("TicketTracker", backref="ticket_tracker", lazy='dynamic')
+    
     def __repr__(self) -> str:
         return '<User %r>' % self.name
 
