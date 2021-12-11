@@ -15,6 +15,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 db = SQLAlchemy(app)
 api = Api(app)
 admin = Admin(app)
+app.secret_key = 'TEAM106'
 
 class UsersLogIn(db.Model):
     __tablename__ = 'users_login'
@@ -32,11 +33,11 @@ class UserInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users_login.id'))
-    team_id = db.Column(db.Integer, unique=False, nullable=False)
+    # team_id = db.Column(db.Integer, unique=False, nullable=False)
     #many to 1
-    #team_id = db.relationship('Teams', backref = 'team_names.id')
-    # user_login = db.relationship('UsersLogIn', )
-    
+    team_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
+    team = db.relationship('Teams')
+    ticket = db.relationship("TicketTracker", backref="ticket_tracker", lazy='dynamic')
     def __repr__(self) -> str:
         return '<User %r>' % self.name
 
@@ -44,7 +45,8 @@ class Teams(db.Model):
     __tablename__ = 'team_names'
     id = db.Column(db.Integer, primary_key=True)
     team_name = db.Column(db.String(80), unique=True, nullable=False)
-    
+    users = db.relationship("UserInfo", lazy='dynamic')
+    # tickets = db.relationship("TicketTracker", lazy='dynamic')
     def __repr__(self) -> str:
         return '<User %r>' % self.team_name
 
@@ -53,11 +55,17 @@ class TicketTracker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     ticket_number = db.Column(db.Integer, unique=False, nullable=False) #not sure if too make it string or int... string can be unique, int we have too keep track of the last number.... 
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'))
-    assigned_department_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
+    #assigned_department_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
     due_date = db.Column(db.DateTime, nullable=False)
     created_date  = db.Column(db.DateTime, nullable=False) 
     status = db.Column(db.String(80), unique=False, nullable=False)
     description = db.Column(db.String(600), unique=False, nullable=False)
+    
+    # user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'))
+    # user = db.relationship('UserInfo')
+    
+    # team_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
+    # team = db.relationship('Teams')
 
 class Comments(db.Model):
     __tablename__ = 'comments'
