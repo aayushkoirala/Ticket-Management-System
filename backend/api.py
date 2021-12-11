@@ -90,13 +90,19 @@ admin.add_view(ModelView(Comments, db.session))
 admin.add_view(ModelView(Messages, db.session))
 
 
-
 class TicketsAPI(Resource):
     def get(self):
         session = {'user_id':1}
         if 'user_id' in session:
             tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
-            print(tickets)
+            json_data = json.loads("{}")
+            for i,ticket in enumerate(tickets):
+                user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
+                json_data.update({i:{'ticket_id':ticket.id,
+                                    'assignee': user_info.name,
+                                    'due_date':str(ticket.due_date),
+                                    'status':ticket.status}})
+            return json_data
 
 api.add_resource(TicketsAPI, '/tickets_api')
 @app.route('/')
