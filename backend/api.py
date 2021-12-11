@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from distutils.log import error
+from flask_cors import CORS
 import json
 
 app = Flask(__name__)
@@ -16,7 +17,7 @@ db = SQLAlchemy(app)
 api = Api(app)
 admin = Admin(app)
 app.secret_key = 'TEAM106'
-
+CORS(app)
 class UsersLogIn(db.Model):
     __tablename__ = 'users_login'
     id = db.Column(db.Integer, primary_key=True)
@@ -88,6 +89,16 @@ admin.add_view(ModelView(TicketTracker, db.session))
 admin.add_view(ModelView(Comments, db.session))
 admin.add_view(ModelView(Messages, db.session))
 
+
+
+class TicketsAPI(Resource):
+    def get(self):
+        session = {'user_id':1}
+        if 'user_id' in session:
+            tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
+            print(tickets)
+
+api.add_resource(TicketsAPI, '/tickets_api')
 @app.route('/')
 def home():
     return 'welcome'
