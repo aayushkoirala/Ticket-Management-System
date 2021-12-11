@@ -66,6 +66,7 @@ class TicketTracker(db.Model):
     
     # team_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
     # team = db.relationship('Teams')
+    comments = db.relationship('Comments', backref='ticket_tracker',lazy='dynamic')
 
 class Comments(db.Model):
     __tablename__ = 'comments'
