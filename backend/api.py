@@ -8,8 +8,10 @@ from distutils.log import error
 from flask_cors import CORS
 import json
 import datetime
+
 import re
 import hashlib
+import random
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -204,6 +206,18 @@ class TicketsAPI(Resource):
         return 'failure'
 
 def hashing(password):
+    ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    chars = []
+    for i in range(16):
+        chars.append(random.choice(ALPHABET))
+    
+    salt = "".join(chars)
+    current_pass = password+salt
+    hashed = hashlib.md5(current_pass.encode())
+    hashed = hashed.hexdigest()
+    hashed_salted = "$"+salt+"$"+hashed
+    
+
     # hashed_salted = password
     # pattern = re.compile(r'[$]\w+[$]')
     # matches = pattern.finditer(hashed_salted)
@@ -213,7 +227,7 @@ def hashing(password):
     # result = hashlib.md5(concat_pass_salt.encode())
     # pattern2 = re.compile(r'[$]\w+')
     # matches2 = pattern2.finditer(hashed_salted)
-    return password
+    return hashed_salted
 
 class CreateUser(Resource):
     def post(self):
