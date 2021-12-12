@@ -55,13 +55,14 @@ class TicketTracker(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'))
-    assigned_department_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
+    
     due_date = db.Column(db.DateTime, nullable=False)
     created_date  = db.Column(db.DateTime, nullable=False) 
     status = db.Column(db.String(80), unique=False, nullable=False)
     description = db.Column(db.String(600), unique=False, nullable=False)
     
-
+    assigned_department_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
+    team = db.relationship('Teams')
     
     comments = db.relationship('Comments', backref='ticket_tracker',lazy='dynamic')
     
@@ -91,16 +92,27 @@ admin.add_view(ModelView(Messages, db.session))
 class TicketsAPI(Resource):
     def get(self):
         session = {'user_id':1}
-        if 'user_id' in session: #if manager
-            tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
-            json_data = json.loads("{}")
-            for i,ticket in enumerate(tickets):
-                user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
-                json_data.update({i:{'ticket_id':ticket.id,
-                                    'assignee': user_info.name,
-                                    'due_date':str(ticket.due_date),
-                                    'status':ticket.status}})
-            return json_data
+        if 'user_id' in session: 
+            user_info = UserInfo.query.filter_by(id=session['user_id']).first()
+            if user_info.rank == 'manager':
+                tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
+                json_data = json.loads("{}")
+                for i,ticket in enumerate(tickets):
+                    user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
+                    json_data.update({i:{'ticket_id':ticket.id,
+                                        'assignee': user_info.name,
+                                        'due_date':str(ticket.due_date),
+                                        'status':ticket.status}})
+                return json_data
+            elif user_info.rank == 'developer':
+                tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
+                json_data = json.loads("{}")
+                for i,ticket in enumerate(tickets):
+                    user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
+                    json_data.update({i:{'ticket_id':ticket.id,
+                                        'due_date':str(ticket.due_date),
+                                        'status':ticket.status}})
+                return json_data
 
 api.add_resource(TicketsAPI, '/tickets_api')
 @app.route('/')
