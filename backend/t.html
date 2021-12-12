@@ -1,5 +1,5 @@
-<button onclick="f()">hellow</button>
-
+<button onclick="f()">get</button>
+<button onclick="a()">post</button>
 <script>
     function f() {
         const xhttp = new XMLHttpRequest();
@@ -9,6 +9,22 @@
         const async = true;
         xhttp.open(method, url, async);
         xhttp.send();
+        xhttp.onload = function() {
+            console.log(this.responseText);
+        };
+    }
+
+    function a() {
+        const xhttp = new XMLHttpRequest();
+        const method = "POST";
+        const data = {
+            action: "get_ticket_info",
+            ticket_id: 1,
+        };
+        const url = "http://127.0.0.1:5000/tickets_api";
+        const async = true;
+        xhttp.open(method, url, async);
+        xhttp.send(JSON.stringify(data));
         xhttp.onload = function() {
             console.log(this.responseText);
         };

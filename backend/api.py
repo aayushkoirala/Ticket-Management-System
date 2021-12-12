@@ -7,6 +7,7 @@ from flask_admin.contrib.sqla import ModelView
 from distutils.log import error
 from flask_cors import CORS
 import json
+import datetime
 import re
 import hashlib
 
@@ -99,6 +100,7 @@ class TicketsAPI(Resource):
             if user_info.rank == 'manager':
                 tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
                 json_data = json.loads("{}")
+                
                 for i,ticket in enumerate(tickets):
                     user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
                     json_data.update({i:{'ticket_id':ticket.id,
@@ -115,6 +117,84 @@ class TicketsAPI(Resource):
                                         'due_date':str(ticket.due_date),
                                         'status':ticket.status}})
                 return json_data
+    def post(self):
+        session = {'user_id':1}
+        if 'user_id' not in session:
+            return
+        action = json.loads(request.data)['action']
+        print(action)
+        if action == 'get_ticket_info':
+            ticket_id = json.loads(request.data)['ticket_id']
+            ticket_info = TicketTracker.query.filter_by(id=ticket_id).first()
+            user_info = UserInfo.query.filter_by(id=ticket_info.assigned_user_id).first()
+            team = Teams.query.filter_by(id=ticket_info.assigned_department_id).first()
+            comments = Comments.query.filter_by(ticket_id=ticket_info.id).all()
+            
+            comment_data = []
+            for cmnt in comments: #stores comment into a list
+                comment_data.append({'id':cmnt.id,'comment':cmnt.comment})
+            
+            json_data = json.loads("{}")
+            json_data.update({'ticket_info':{
+                                            'ticket_id':ticket_info.id,
+                                            'assined_to':user_info.name,
+                                            'team':team.team_name,
+                                            'due_date':str(ticket_info.due_date),
+                                            'created_date':str(ticket_info.created_date),
+                                            'status':ticket_info.status,
+                                            'description':ticket_info.description
+                                        },
+                            'comments':json.loads(json.dumps(comment_data))
+                            })
+            return json_data
+        
+        elif action == 'post_comment':
+            data = json.loads(request.data)
+            ticket_id = data['ticket_id']
+            comment = data['comment']
+            new_comment = Comments(ticket_id=ticket_id, comment=comment)
+            db.session.add(new_comment)
+            db.session.commit()
+            return 'success'
+        elif action == 'create_ticket':
+            print("endter")
+            data = json.loads(request.data)
+            user_id = data['assigned_user_id']
+            due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
+            
+            status = data['status']
+            description = data['description']
+            created_date = datetime.datetime.now()
+            user_info = UserInfo.query.filter_by(id=session['user_id']).first()
+            team_id = user_info.team_id
+            new_ticket = TicketTracker(assigned_user_id=user_id, 
+                                        due_date=due_date,
+                                        created_date=created_date,
+                                        status=status,
+                                        description=description,
+                                        assigned_department_id=team_id)
+            db.session.add(new_ticket)
+            db.session.commit()
+            return 'success'
+        
+    def put(self):
+        action = json.loads(request.data)['action']
+        if action == 'edit_comment':
+            data = json.loads(request.data)
+            comment_id = data['comment_id']
+            new_comment = data['comment']
+            comment = Comments.query.filter_by(id=comment_id).first()
+            comment.comment = new_comment
+            db.session.commit()
+            return 'success'
+        elif action == 'edit_status':
+            data = json.loads(request.data)
+            new_status = data['status']
+            ticket_info = TicketTracker.query.filter_by(id=data['ticket_id']).first()
+            ticket_info.status = new_status
+            db.session.commit()
+            return 'success'
+        return 'failure'
 
 # alberto
 # salt is
