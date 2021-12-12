@@ -91,6 +91,13 @@ admin.add_view(ModelView(TicketTracker, db.session))
 admin.add_view(ModelView(Comments, db.session))
 admin.add_view(ModelView(Messages, db.session))
 
+class TeamAPI(Resource):
+    def get(self):
+        teams = Teams.query.all()
+        team_list = []
+        for team in teams:
+            team_list.append({'id':team.id,'name':team.team_name})
+        return json.loads(json.dumps(team_list))
 
 class TicketsAPI(Resource):
     def get(self):
@@ -196,6 +203,34 @@ class TicketsAPI(Resource):
             return 'success'
         return 'failure'
 
+def hashing(password):
+    # hashed_salted = password
+    # pattern = re.compile(r'[$]\w+[$]')
+    # matches = pattern.finditer(hashed_salted)
+    # for match in matches:
+    #     salt = match[0][1:-1]
+    # concat_pass_salt = password+salt
+    # result = hashlib.md5(concat_pass_salt.encode())
+    # pattern2 = re.compile(r'[$]\w+')
+    # matches2 = pattern2.finditer(hashed_salted)
+    return password
+
+class CreateUser(Resource):
+    def post(self):
+        data = json.loads(request.data)
+        username = data['username']
+        password = hashing(data['password'])
+        team_id = data['team_id']
+        name = data['name']
+        rank = data['rank'] #developer or manager
+        new_user_login = UsersLogIn(username=username, password=password)
+        db.session.add(new_user_login)
+        db.session.commit()
+        new_user_info = UserInfo(name=name, rank=rank, team_id=int(team_id), user_id=new_user_login.id)
+        db.session.add(new_user_info)
+        db.session.commit()
+        
+
 class AuthenticateAPI(Resource):
     def post(self):
         session.pop('user_id', None)
@@ -220,6 +255,7 @@ class AuthenticateAPI(Resource):
                 return  'success'
             else:
                 return 'failure'
+
 # alberto
 # salt is
 # @app.route('/',methods = ['GET' , 'POST'])
@@ -251,6 +287,8 @@ class AuthenticateAPI(Resource):
                      
 api.add_resource(TicketsAPI, '/tickets_api')
 api.add_resource(AuthenticateAPI, '/authenticate')
+api.add_resource(CreateUser, '/create_user')
+api.add_resource(TeamAPI, '/team_info')
 @app.route('/')
 def home():
     return 'welcome'

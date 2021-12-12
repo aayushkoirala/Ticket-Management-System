@@ -5,7 +5,7 @@
         const xhttp = new XMLHttpRequest();
         const method = "GET";
 
-        const url = "http://127.0.0.1:5000/tickets_api";
+        const url = "http://127.0.0.1:5000/team_info";
         const async = true;
         xhttp.open(method, url, async);
         xhttp.send();
@@ -18,10 +18,13 @@
         const xhttp = new XMLHttpRequest();
         const method = "POST";
         const data = {
-            action: "get_ticket_info",
-            ticket_id: 1,
+            username: "yoan",
+            password: 1,
+            team_id: 1,
+            name: "yoa",
+            rank: "manager",
         };
-        const url = "http://127.0.0.1:5000/tickets_api";
+        const url = "http://127.0.0.1:5000/create_user";
         const async = true;
         xhttp.open(method, url, async);
         xhttp.send(JSON.stringify(data));
