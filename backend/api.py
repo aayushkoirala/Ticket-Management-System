@@ -93,6 +93,7 @@ admin.add_view(ModelView(TicketTracker, db.session))
 admin.add_view(ModelView(Comments, db.session))
 admin.add_view(ModelView(Messages, db.session))
 
+
 class TeamAPI(Resource):
     def get(self):
         teams = Teams.query.all()
@@ -240,6 +241,7 @@ class CreateUser(Resource):
         new_user_login = UsersLogIn(username=username, password=password)
         db.session.add(new_user_login)
         db.session.commit()
+        #inserting data
         new_user_info = UserInfo(name=name, rank=rank, team_id=int(team_id), user_id=new_user_login.id)
         db.session.add(new_user_info)
         db.session.commit()
@@ -270,6 +272,28 @@ class AuthenticateAPI(Resource):
             else:
                 return 'failure'
 
+class MessagesAPI(Resource):
+    #methods GET, POST, PUT, DELETE
+    # def get(self): #doesn't accept body
+    #     pass
+    def post(self): #get msgs (current logged in user + from id), post msgs
+        action = json.loads(request.data)['action']
+        if action == 'get':
+            return
+        elif action == 'post': #inserting new msg
+            data = json.loads(request.data)
+            from_id = data['from_id']
+            to = data['to_id']
+            msg = data['msg']
+            # {
+            #     'from': user_id,
+            #     'to': user_id,
+            #     'msg':msg
+            # }
+    # def put(self):
+    #     pass
+    # def delete(self): #doesn't accept body
+    #     pass
 # alberto
 # salt is
 # @app.route('/',methods = ['GET' , 'POST'])
@@ -303,6 +327,8 @@ api.add_resource(TicketsAPI, '/tickets_api')
 api.add_resource(AuthenticateAPI, '/authenticate')
 api.add_resource(CreateUser, '/create_user')
 api.add_resource(TeamAPI, '/team_info')
+#api.add_resource(classnaeme, '/APIURL')
+
 @app.route('/')
 def home():
     return 'welcome'
