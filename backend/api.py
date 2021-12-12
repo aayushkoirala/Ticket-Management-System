@@ -196,15 +196,12 @@ class TicketsAPI(Resource):
             return 'success'
         return 'failure'
 
-# alberto
-# salt is
-@app.route('/',methods = ['GET' , 'POST'])
-def login_post():
-    if request.method == 'POST':
+class AuthenticateAPI(Resource):
+    def post(self):
         session.pop('user_id', None)
-        username = request.form['username']
-        password = request.form['password']
-        salt = 'uKgKdCMR2BtnneMv'
+        data = json.loads(request.data)
+        username = data['username']
+        password = data['password']
         query_user = UsersLogIn.query.filter_by(username=username).first()
         if query_user is not None:
             hashed_salted = query_user.password
@@ -220,12 +217,40 @@ def login_post():
                 right_part = matchs[0][1:]
             if(result.hexdigest() == right_part):
                 # update the redirect url to t.html?
-                return redirect(url_for('teacher_logged'))
+                return  'success'
             else:
-                return redirect(url_for('login_post'))
-    return render_template('login.html')
+                return 'failure'
+# alberto
+# salt is
+# @app.route('/',methods = ['GET' , 'POST'])
+# def login_post():
+#     if request.method == 'POST':
+#         session.pop('user_id', None)
+#         username = request.form['username']
+#         password = request.form['password']
+#         salt = 'uKgKdCMR2BtnneMv'
+#         query_user = UsersLogIn.query.filter_by(username=username).first()
+#         if query_user is not None:
+#             hashed_salted = query_user.password
+#             pattern = re.compile(r'[$]\w+[$]')
+#             matches = pattern.finditer(hashed_salted)
+#             for match in matches:
+#                 salt = match[0][1:-1]
+#             concat_pass_salt = password+salt
+#             result = hashlib.md5(concat_pass_salt.encode())
+#             pattern2 = re.compile(r'[$]\w+')
+#             matches2 = pattern2.finditer(hashed_salted)
+#             for matchs in matches2:
+#                 right_part = matchs[0][1:]
+#             if(result.hexdigest() == right_part):
+#                 # update the redirect url to t.html?
+#                 return redirect(url_for('teacher_logged'))
+#             else:
+#                 return redirect(url_for('login_post'))
+    #return render_template('login.html')
                      
 api.add_resource(TicketsAPI, '/tickets_api')
+api.add_resource(AuthenticateAPI, '/authenticate')
 @app.route('/')
 def home():
     return 'welcome'
