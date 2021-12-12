@@ -1,6 +1,3 @@
-from enum import unique
-from sqlite3 import Date
-from venv import create
 from flask import Flask, render_template, jsonify, request, redirect, session, g
 from flask_restful import Api, Resource
 from flask.helpers import url_for
@@ -34,6 +31,7 @@ class UserInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users_login.id'))
+    rank = db.Column(db.String(80), unique=False, nullable=False)
     # team_id = db.Column(db.Integer, unique=False, nullable=False)
     #many to 1
     team_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
@@ -93,7 +91,7 @@ admin.add_view(ModelView(Messages, db.session))
 class TicketsAPI(Resource):
     def get(self):
         session = {'user_id':1}
-        if 'user_id' in session:
+        if 'user_id' in session: #if manager
             tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
             json_data = json.loads("{}")
             for i,ticket in enumerate(tickets):
