@@ -94,11 +94,11 @@ admin.add_view(ModelView(Messages, db.session))
 
 class TicketsAPI(Resource):
     def get(self):
-        session = {'user_id':1}
+        session = {'user_id':4}
         if 'user_id' in session: 
             user_info = UserInfo.query.filter_by(id=session['user_id']).first()
             if user_info.rank == 'manager':
-                tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
+                tickets = TicketTracker.query.filter_by(assigned_department_id=user_info.team_id).all()
                 json_data = json.loads("{}")
                 
                 for i,ticket in enumerate(tickets):
