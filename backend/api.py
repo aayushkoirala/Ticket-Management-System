@@ -7,6 +7,7 @@ from flask_admin.contrib.sqla import ModelView
 from distutils.log import error
 from flask_cors import CORS
 from flask_session import Session
+from datetime import timedelta
 import json
 import datetime
 
@@ -285,6 +286,7 @@ class LoginAPI(Resource):
             if(result.hexdigest() == right_part):
                 # update the redirect url to t.html?
                 session['user_id'] = query_user.id
+                app.permanent_session_lifetime = timedelta(minutes=480)
                 print(session)
                 return  'success'
             else:
