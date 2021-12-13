@@ -375,12 +375,7 @@ api.add_resource(CreateUser, '/create_user')
 api.add_resource(TeamAPI, '/team_info')
 #api.add_resource(classnaeme, '/APIURL')
 
-@app.before_request
-def before_request():
-    g.user = None
-    if 'user_id' in session:
-        query = UserInfo.query.filter_by(user_id=session['user_id']).first()
-        g.user = query
+
 
 @app.route('/')
 def home():
