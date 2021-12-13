@@ -289,15 +289,16 @@ class MessagesAPI(Resource):
             # first we want to check if from_user is the current user
             for msg in all_messages:
                 if(msg.from_user == current_user.id and msg.to_user == to_user_id.id):
-                    list_messages.append([[msg.from_user,msg.msg]])
+                    list_messages.append([[msg.from_user,msg.to_user,msg.msg]])
                 if(msg.from_user == to_user_id.id and msg.to_user == current_user.id):
-                    list_messages.append([[msg.from_user,msg.msg]])
+                    list_messages.append([[msg.from_user,msg.to_user,msg.msg]])
             json_data = json.loads("{}")
             # this is formatting the data to be sent out\
             i = 1
             for msg in list_messages:
                 json_data.update({i: {"from": msg[0],
-                                      "message": msg[1] }})
+                                        "to": msg[1],
+                                      "message": msg[2] }})
                 i+=1
             return json_data
         elif action == 'POST': #inserting new msg
