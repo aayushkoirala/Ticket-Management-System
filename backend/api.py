@@ -95,7 +95,7 @@ admin.add_view(SecureModelView(Comments, db.session))
 admin.add_view(SecureModelView(Messages, db.session))
 class TeamAPI(Resource):
     def get(self):
-        print(session.get('user_id'))
+        print(session['user_id'])
         if session.get('user_id') is None: 
             return
         teams = Teams.query.all()
