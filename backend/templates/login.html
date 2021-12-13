@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- <link rel="stylesheet" href="static\styles\login-page.css"> -->
+<!-- <script src="script.js"></script> -->
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+
+&nbsp; &nbsp;
+<img src="https://i.ibb.co/7SS2Ghr/static/img/logo.png" alt="logo" width="300" /></a>
+
+<body>
+    <form method="POST">
+        <div class="myDiv">
+            <label1><b>Username:</b>&nbsp;</label1>
+            <input id='username' class="input" type="text" name="username" placeholder="username">
+            <p></p>
+            <label1><b>Password:</b>&nbsp;&nbsp;</label1>
+            <input id='password' class="input" type="password" name="password" placeholder="password">
+            <p></p>
+            <button onclick="login()">Submit</button>
+        </div>
+        <form>
+</body>
+
+<script>
+    function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const json_datav2 = {
+            username: username,
+            password: String(password),
+        };
+
+        const xhttp = new XMLHttpRequest();
+        const method = "POST";
+        const url = "http://127.0.0.1:5000/login";
+
+        const async = true;
+        xhttp.open(method, url, async);
+        console.log(JSON.stringify(json_datav2));
+        xhttp.send(JSON.stringify(json_datav2));
+        xhttp.onload = function() {
+            console.log(this.responseText);
+        };
+    }
+</script>
+
+</html>

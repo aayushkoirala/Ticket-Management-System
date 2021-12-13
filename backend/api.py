@@ -86,16 +86,25 @@ class Messages(db.Model):
 
 db.create_all()
 
+class SecureModelView(ModelView):
+    def is_accessible(self):
+        try:
+            return session['user_id'] == UsersLogIn.query.filter_by(id=9).first().id
+        except:
+            return False
+
 admin.add_view(ModelView(UsersLogIn, db.session))
-admin.add_view(ModelView(UserInfo, db.session))
-admin.add_view(ModelView(Teams, db.session))
-admin.add_view(ModelView(TicketTracker, db.session))
-admin.add_view(ModelView(Comments, db.session))
-admin.add_view(ModelView(Messages, db.session))
+admin.add_view(SecureModelView(UserInfo, db.session))
+admin.add_view(SecureModelView(Teams, db.session))
+admin.add_view(SecureModelView(TicketTracker, db.session))
+admin.add_view(SecureModelView(Comments, db.session))
+admin.add_view(SecureModelView(Messages, db.session))
 
 
 class TeamAPI(Resource):
     def get(self):
+        if 'user_id' not in session: 
+            return
         teams = Teams.query.all()
         team_list = []
         for team in teams:
@@ -104,31 +113,31 @@ class TeamAPI(Resource):
 
 class TicketsAPI(Resource):
     def get(self):
-        session = {'user_id':4}
-        if 'user_id' in session: 
-            user_info = UserInfo.query.filter_by(id=session['user_id']).first()
-            if user_info.rank == 'manager':
-                tickets = TicketTracker.query.filter_by(assigned_department_id=user_info.team_id).all()
-                json_data = json.loads("{}")
-                
-                for i,ticket in enumerate(tickets):
-                    user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
-                    json_data.update({i:{'ticket_id':ticket.id,
-                                        'assignee': user_info.name,
-                                        'due_date':str(ticket.due_date),
-                                        'status':ticket.status}})
-                return json_data
-            elif user_info.rank == 'developer':
-                tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
-                json_data = json.loads("{}")
-                for i,ticket in enumerate(tickets):
-                    user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
-                    json_data.update({i:{'ticket_id':ticket.id,
-                                        'due_date':str(ticket.due_date),
-                                        'status':ticket.status}})
-                return json_data
+        if 'user_id' not in session: 
+            return
+        user_info = UserInfo.query.filter_by(id=session['user_id']).first()
+        if user_info.rank == 'manager':
+            tickets = TicketTracker.query.filter_by(assigned_department_id=user_info.team_id).all()
+            json_data = json.loads("{}")
+            
+            for i,ticket in enumerate(tickets):
+                user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
+                json_data.update({i:{'ticket_id':ticket.id,
+                                    'assignee': user_info.name,
+                                    'due_date':str(ticket.due_date),
+                                    'status':ticket.status}})
+            return json_data
+        elif user_info.rank == 'developer':
+            tickets = TicketTracker.query.filter_by(assigned_user_id=session['user_id']).all()
+            json_data = json.loads("{}")
+            for i,ticket in enumerate(tickets):
+                user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
+                json_data.update({i:{'ticket_id':ticket.id,
+                                    'due_date':str(ticket.due_date),
+                                    'status':ticket.status}})
+            return json_data
     def post(self):
-        session = {'user_id':1}
+        
         if 'user_id' not in session:
             return
         action = json.loads(request.data)['action']
@@ -188,6 +197,8 @@ class TicketsAPI(Resource):
             return 'success'
         
     def put(self):
+        if 'user_id' not in session: 
+            return
         action = json.loads(request.data)['action']
         if action == 'edit_comment':
             data = json.loads(request.data)
@@ -213,7 +224,7 @@ def hashing(password):
         chars.append(random.choice(ALPHABET))
     
     salt = "".join(chars)
-    current_pass = password+salt
+    current_pass = str(password)+salt
     hashed = hashlib.md5(current_pass.encode())
     hashed = hashed.hexdigest()
     hashed_salted = "$"+salt+"$"+hashed
@@ -247,14 +258,17 @@ class CreateUser(Resource):
         db.session.commit()
         
 
-class AuthenticateAPI(Resource):
+class LoginAPI(Resource):
     def post(self):
         session.pop('user_id', None)
         data = json.loads(request.data)
         username = data['username']
         password = data['password']
         query_user = UsersLogIn.query.filter_by(username=username).first()
+        print('q')
         if query_user is not None:
+            print('hello')
+            return 'success'
             hashed_salted = query_user.password
             pattern = re.compile(r'[$]\w+[$]')
             matches = pattern.finditer(hashed_salted)
@@ -268,9 +282,11 @@ class AuthenticateAPI(Resource):
                 right_part = matchs[0][1:]
             if(result.hexdigest() == right_part):
                 # update the redirect url to t.html?
+                session['user_id'] = query_user.id
                 return  'success'
             else:
                 return 'failure'
+        return 'failure'
 
 class MessagesAPI(Resource):
     #methods GET, POST, PUT, DELETE
@@ -278,7 +294,8 @@ class MessagesAPI(Resource):
     #     pass
     def post(self): #get msgs (current logged in user + from id), post msgs
         data = json.loads(request.data)
-
+        if 'user_id' not in session: 
+            return
         current_user = UserInfo.query.filter_by(id=data['from_id']).first()
         to_user_id =  UserInfo.query.filter_by(id=data['to_id']).first() 
 
@@ -349,14 +366,14 @@ class MessagesAPI(Resource):
     #return render_template('login.html')
                      
 api.add_resource(TicketsAPI, '/tickets_api')
-api.add_resource(AuthenticateAPI, '/authenticate')
+api.add_resource(LoginAPI, '/login')
 api.add_resource(CreateUser, '/create_user')
 api.add_resource(TeamAPI, '/team_info')
 #api.add_resource(classnaeme, '/APIURL')
 
 @app.route('/')
 def home():
-    return 'welcome'
+    return render_template('login.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
