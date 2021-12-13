@@ -21,8 +21,10 @@ db = SQLAlchemy(app)
 api = Api(app)
 admin = Admin(app)
 app.secret_key = 'TEAM106'
-app.config['SESSION_TYPE'] = 'filesystem'
-Session(app)
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db
+app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
+sess = Session(app)
 CORS(app)
 class UsersLogIn(db.Model):
     __tablename__ = 'users_login'
@@ -88,7 +90,6 @@ class Messages(db.Model):
     to_user = db.Column(db.String(80), unique=False, nullable=False)
     msg = db.Column(db.String(500), unique=False, nullable=False)
 
-db.create_all()
 
 class SecureModelView(ModelView):
     def is_accessible(self):
@@ -109,8 +110,8 @@ admin.add_view(SecureModelView(Messages, db.session))
 
 class TeamAPI(Resource):
     def get(self):
-        print(session)
-        if 'user_id' not in session: 
+        print(session.get('user_id'))
+        if session.get('user_id') is None: 
             return
         teams = Teams.query.all()
         team_list = []
@@ -288,8 +289,8 @@ class LoginAPI(Resource):
             if(result.hexdigest() == right_part):
                 # update the redirect url to t.html?
                 session['user_id'] = query_user.id
-                app.permanent_session_lifetime = timedelta(minutes=480)
-                print(session)
+                #app.permanent_session_lifetime = timedelta(minutes=480)
+                print(session.get('user_id'))
                 return  'success'
             else:
                 return 'failure'
