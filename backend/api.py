@@ -21,6 +21,7 @@ db = SQLAlchemy(app)
 api = Api(app)
 admin = Admin(app)
 app.secret_key = 'TEAM106'
+app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 CORS(app)
 class UsersLogIn(db.Model):
@@ -108,6 +109,7 @@ admin.add_view(SecureModelView(Messages, db.session))
 
 class TeamAPI(Resource):
     def get(self):
+        print(session)
         if 'user_id' not in session: 
             return
         teams = Teams.query.all()
