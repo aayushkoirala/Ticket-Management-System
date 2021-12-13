@@ -268,7 +268,12 @@ class LoginAPI(Resource):
             else:
                 return 'failure'
         return 'failure'
-
+    def delete(self):
+        try:
+            session.pop('user_id', None)
+            return 'success'
+        except:
+            return 'failure'
 class MessagesAPI(Resource):
     #methods GET, POST, PUT, DELETE
     # def get(self): #doesn't accept body
