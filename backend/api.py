@@ -9,27 +9,22 @@ from flask_cors import CORS
 from datetime import timedelta
 import json
 import datetime
-
 import re
 import hashlib
 import random
-
 app = Flask(__name__)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 db = SQLAlchemy(app)
 api = Api(app)
 admin = Admin(app)
 app.secret_key = 'TEAM106'
-app.config['SESSION_TYPE'] = 'sqlalchemy'
-app.config['SESSION_SQLALCHEMY'] = db
-app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
 CORS(app)
 class UsersLogIn(db.Model):
     __tablename__ = 'users_login'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
-
     user_information = db.relationship("UserInfo", backref='users_login', uselist=False)
     
     def __repr__(self) -> str:
@@ -62,17 +57,13 @@ class Teams(db.Model):
 class TicketTracker(db.Model):
     __tablename__ = 'ticket_tracker'
     id = db.Column(db.Integer, primary_key=True)
-
     assigned_user_id = db.Column(db.Integer, db.ForeignKey('user_info.id'))
-    
     due_date = db.Column(db.DateTime, nullable=False)
     created_date  = db.Column(db.DateTime, nullable=False) 
     status = db.Column(db.String(80), unique=False, nullable=False)
     description = db.Column(db.String(600), unique=False, nullable=False)
-    
     assigned_department_id = db.Column(db.Integer, db.ForeignKey('team_names.id'))
     team = db.relationship('Teams')
-    
     comments = db.relationship('Comments', backref='ticket_tracker',lazy='dynamic')
     
 class Comments(db.Model):
@@ -87,8 +78,6 @@ class Messages(db.Model):
     from_user = db.Column(db.String(80), unique=False, nullable=False)
     to_user = db.Column(db.String(80), unique=False, nullable=False)
     msg = db.Column(db.String(500), unique=False, nullable=False)
-
-
 class SecureModelView(ModelView):
     def is_accessible(self):
         try:
@@ -104,8 +93,6 @@ admin.add_view(SecureModelView(Teams, db.session))
 admin.add_view(SecureModelView(TicketTracker, db.session))
 admin.add_view(SecureModelView(Comments, db.session))
 admin.add_view(SecureModelView(Messages, db.session))
-
-
 class TeamAPI(Resource):
     def get(self):
         print(session.get('user_id'))
@@ -143,7 +130,6 @@ class TicketsAPI(Resource):
                                     'status':ticket.status}})
             return json_data
     def post(self):
-        
         if 'user_id' not in session:
             return
         action = json.loads(request.data)['action']
@@ -234,17 +220,6 @@ def hashing(password):
     hashed = hashlib.md5(current_pass.encode())
     hashed = hashed.hexdigest()
     hashed_salted = "$"+salt+"$"+hashed
-    
-
-    # hashed_salted = password
-    # pattern = re.compile(r'[$]\w+[$]')
-    # matches = pattern.finditer(hashed_salted)
-    # for match in matches:
-    #     salt = match[0][1:-1]
-    # concat_pass_salt = password+salt
-    # result = hashlib.md5(concat_pass_salt.encode())
-    # pattern2 = re.compile(r'[$]\w+')
-    # matches2 = pattern2.finditer(hashed_salted)
     return hashed_salted
 
 class CreateUser(Resource):
