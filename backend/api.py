@@ -93,6 +93,7 @@ admin.add_view(ModelView(TicketTracker, db.session))
 admin.add_view(ModelView(Comments, db.session))
 admin.add_view(ModelView(Messages, db.session))
 
+
 class TeamAPI(Resource):
     def get(self):
         teams = Teams.query.all()
@@ -240,6 +241,7 @@ class CreateUser(Resource):
         new_user_login = UsersLogIn(username=username, password=password)
         db.session.add(new_user_login)
         db.session.commit()
+        #inserting data
         new_user_info = UserInfo(name=name, rank=rank, team_id=int(team_id), user_id=new_user_login.id)
         db.session.add(new_user_info)
         db.session.commit()
@@ -270,6 +272,54 @@ class AuthenticateAPI(Resource):
             else:
                 return 'failure'
 
+class MessagesAPI(Resource):
+    #methods GET, POST, PUT, DELETE
+    # def get(self): #doesn't accept body
+    #     pass
+    def post(self): #get msgs (current logged in user + from id), post msgs
+        data = json.loads(request.data)
+
+        current_user = UserInfo.query.filter_by(id=data['from_id']).first()
+        to_user_id =  UserInfo.query.filter_by(id=data['to_id']).first() 
+
+        list_messages = []
+        action = json.loads(request.data)['action']
+        if action == 'GET':
+            all_messages = Messages.query.all()
+            # first we want to check if from_user is the current user
+            for msg in all_messages:
+                if(msg.from_user == current_user.id and msg.to_user == to_user_id.id):
+                    list_messages.append([[msg.from_user,msg.to_user,msg.msg]])
+                if(msg.from_user == to_user_id.id and msg.to_user == current_user.id):
+                    list_messages.append([[msg.from_user,msg.to_user,msg.msg]])
+            json_data = json.loads("{}")
+            # this is formatting the data to be sent out\
+            i = 1
+            for msg in list_messages:
+                json_data.update({i: {"from": msg[0],
+                                        "to": msg[1],
+                                      "message": msg[2] }})
+                i+=1
+            return json_data
+        elif action == 'POST': #inserting new msg
+            data = json.loads(request.data)
+            current_user = UserInfo.query.filter_by(id=data['from_id']).first()
+            to_user_id =  UserInfo.query.filter_by(id=data['to_id']).first() 
+            msg = data['msg']
+            query = Messages.query.all()
+            message_key = query[-1].id + 1
+            message_entry = Messages(id = message_key, from_user = current_user.id, to_user = to_user_id.id,msg = msg)
+            db.session.add(message_entry)
+            db.session.commit()
+            # {
+            #     'from': user_id,
+            #     'to': user_id,
+            #     'msg':msg
+            # }
+    # def put(self):
+    #     pass
+    # def delete(self): #doesn't accept body
+    #     pass
 # alberto
 # salt is
 # @app.route('/',methods = ['GET' , 'POST'])
@@ -303,6 +353,8 @@ api.add_resource(TicketsAPI, '/tickets_api')
 api.add_resource(AuthenticateAPI, '/authenticate')
 api.add_resource(CreateUser, '/create_user')
 api.add_resource(TeamAPI, '/team_info')
+#api.add_resource(classnaeme, '/APIURL')
+
 @app.route('/')
 def home():
     return 'welcome'
