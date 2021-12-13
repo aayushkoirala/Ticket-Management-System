@@ -6,7 +6,6 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from distutils.log import error
 from flask_cors import CORS
-from flask_session import Session
 from datetime import timedelta
 import json
 import datetime
@@ -24,7 +23,6 @@ app.secret_key = 'TEAM106'
 app.config['SESSION_TYPE'] = 'sqlalchemy'
 app.config['SESSION_SQLALCHEMY'] = db
 app.config.update(SESSION_COOKIE_SAMESITE="None", SESSION_COOKIE_SECURE=True)
-sess = Session(app)
 CORS(app)
 class UsersLogIn(db.Model):
     __tablename__ = 'users_login'
