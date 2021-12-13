@@ -1,5 +1,20 @@
 <button onclick="f()">get</button>
 <button onclick="a()">post</button>
+<button onclick="login()">admin</button>
+
+<body>
+    <form method="POST">
+        <div class="myDiv">
+            <label1><b>Username:</b>&nbsp;</label1>
+            <input id='username' class="input" type="text" name="username" placeholder="username">
+            <p></p>
+            <label1><b>Password:</b>&nbsp;&nbsp;</label1>
+            <input id='password' class="input" type="password" name="password" placeholder="password">
+            <p></p>
+            <button onclick="login()">Submit</button>
+        </div>
+        <form>
+</body>
 <script>
     function f() {
         const xhttp = new XMLHttpRequest();
@@ -27,6 +42,27 @@
         const async = true;
         xhttp.open(method, url, async);
         xhttp.send(JSON.stringify(data));
+        xhttp.onload = function() {
+            console.log(this.responseText);
+        };
+    }
+
+    function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const json_datav2 = {
+            username: username,
+            password: String(password),
+        };
+
+        const xhttp = new XMLHttpRequest();
+        const method = "POST";
+        const url = "http://127.0.0.1:5000/login";
+
+        const async = true;
+        xhttp.open(method, url, async);
+        console.log(JSON.stringify(json_datav2));
+        xhttp.send(JSON.stringify(json_datav2));
         xhttp.onload = function() {
             console.log(this.responseText);
         };

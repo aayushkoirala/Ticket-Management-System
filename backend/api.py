@@ -89,11 +89,13 @@ db.create_all()
 class SecureModelView(ModelView):
     def is_accessible(self):
         try:
+            print(session)
+            print(UsersLogIn.query.filter_by(id=9).first().id)
             return session['user_id'] == UsersLogIn.query.filter_by(id=9).first().id
         except:
             return False
 
-admin.add_view(ModelView(UsersLogIn, db.session))
+admin.add_view(SecureModelView(UsersLogIn, db.session))
 admin.add_view(SecureModelView(UserInfo, db.session))
 admin.add_view(SecureModelView(Teams, db.session))
 admin.add_view(SecureModelView(TicketTracker, db.session))
@@ -260,15 +262,13 @@ class CreateUser(Resource):
 
 class LoginAPI(Resource):
     def post(self):
-        session.pop('user_id', None)
+        #session.pop('user_id', None)
         data = json.loads(request.data)
         username = data['username']
         password = data['password']
         query_user = UsersLogIn.query.filter_by(username=username).first()
-        print('q')
+
         if query_user is not None:
-            print('hello')
-            return 'success'
             hashed_salted = query_user.password
             pattern = re.compile(r'[$]\w+[$]')
             matches = pattern.finditer(hashed_salted)
@@ -283,6 +283,7 @@ class LoginAPI(Resource):
             if(result.hexdigest() == right_part):
                 # update the redirect url to t.html?
                 session['user_id'] = query_user.id
+                print(session)
                 return  'success'
             else:
                 return 'failure'
@@ -371,6 +372,13 @@ api.add_resource(LoginAPI, '/login')
 api.add_resource(CreateUser, '/create_user')
 api.add_resource(TeamAPI, '/team_info')
 #api.add_resource(classnaeme, '/APIURL')
+
+@app.before_request
+def before_request():
+    g.user = None
+    if 'user_id' in session:
+        query = UserInfo.query.filter_by(user_id=session['user_id']).first()
+        g.user = query
 
 @app.route('/')
 def home():
