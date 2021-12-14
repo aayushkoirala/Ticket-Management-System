@@ -117,20 +117,33 @@ class TicketsAPI(Resource):
     @jwt_required()
     def get(self):
         user_name = get_jwt_identity()
+
         user_cred = UsersLogIn.query.filter_by(username=user_name).first()
         user_info = UserInfo.query.filter_by(user_id=user_cred.id).first()
+
         if user_info.rank == 'manager':
             tickets = TicketTracker.query.filter_by(assigned_department_id=user_info.team_id).all()
 
+            if tickets is None:
+                return 'is None'
             output = []
-            for i,ticket in enumerate(tickets):
-                user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
-                output.append({'ticket_id':ticket.id,
-                                    'assined_to': user_info.name,
-                                    'due_date':str(ticket.due_date),
-                                    'created_date':str(ticket.created_date),
-                                    'status':ticket.status,
-                                    'summary':ticket.description})
+
+            for ticket in tickets:
+                try:
+                    user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
+                    output.append({'ticket_id':ticket.id,
+                                        'assined_to': user_info.name,
+                                        'due_date':str(ticket.due_date),
+                                        'created_date':str(ticket.created_date),
+                                        'status':ticket.status,
+                                        'summary':ticket.description})
+                except:
+                    output.append({'ticket_id':ticket.id,
+                                        'assined_to': "",
+                                        'due_date':str(ticket.due_date),
+                                        'created_date':str(ticket.created_date),
+                                        'status':ticket.status,
+                                        'summary':ticket.description})
 
             return output
         elif user_info.rank == 'developer':
@@ -149,101 +162,106 @@ class TicketsAPI(Resource):
     def post(self):
         # if 'user_id' not in session:
         #     return
-        action = json.loads(request.data)['action']
+        try:
+            action = json.loads(request.data)['action']
 
-        if action == 'get_ticket_info':
-            ticket_id = json.loads(request.data)['ticket_id']
-            ticket_info = TicketTracker.query.filter_by(id=ticket_id).first()
-            user_info = UserInfo.query.filter_by(id=ticket_info.assigned_user_id).first()
-            team = Teams.query.filter_by(id=ticket_info.assigned_department_id).first()
+            if action == 'get_ticket_info':
+                ticket_id = json.loads(request.data)['ticket_id']
+                ticket_info = TicketTracker.query.filter_by(id=ticket_id).first()
+                user_info = UserInfo.query.filter_by(id=ticket_info.assigned_user_id).first()
+                team = Teams.query.filter_by(id=ticket_info.assigned_department_id).first()
 
-            ticket_info_out = []
-            ticket_info_out.append({
-                                            'ticket_id':ticket_info.id,
-                                            'assined_to':user_info.name,
-                                            'team':team.team_name,
-                                            'due_date':str(ticket_info.due_date),
-                                            'created_date':str(ticket_info.created_date),
-                                            'status':ticket_info.status,
-                                            'description':ticket_info.description
-                                        })
-            return ticket_info_out
+                ticket_info_out = []
+                ticket_info_out.append({
+                                                'ticket_id':ticket_info.id,
+                                                'assined_to':user_info.name,
+                                                'team':team.team_name,
+                                                'due_date':str(ticket_info.due_date),
+                                                'created_date':str(ticket_info.created_date),
+                                                'status':ticket_info.status,
+                                                'description':ticket_info.description
+                                            })
+                return ticket_info_out
 
-        elif action == 'get_comments_given_ticket':
-            ticket_id = json.loads(request.data)['ticket_id']
-            ticket_info = TicketTracker.query.filter_by(id=ticket_id).first()
-            comments = Comments.query.filter_by(ticket_id=ticket_info.id).all()
-            comment_data = []
-            for cmnt in comments: #stores comment into a list
-                comment_data.append({'id':cmnt.id,'comment':cmnt.comment})
-            return comment_data
-        elif action == 'post_comment':
-            data = json.loads(request.data)
-            ticket_id = data['ticket_id']
-            comment = data['comment']
-            new_comment = Comments(ticket_id=ticket_id, comment=comment)
-            db.session.add(new_comment)
-            db.session.commit()
-            return 'success'
-        elif action == 'create_ticket':
-            data = json.loads(request.data)
-            try:
-                assigned_to_id = json.loads(request.data)['assigned_to_id']
-                user_cred = UserInfo.query.filter_by(id=assigned_to_id).first()
-                if user_cred is not None:
-                    user_info = UserInfo.query.filter_by(user_id=user_cred.id).first()
+            elif action == 'get_comments_given_ticket':
+                ticket_id = json.loads(request.data)['ticket_id']
+                ticket_info = TicketTracker.query.filter_by(id=ticket_id).first()
+                comments = Comments.query.filter_by(ticket_id=ticket_info.id).all()
+                comment_data = []
+                for cmnt in comments: #stores comment into a list
+                    comment_data.append({'id':cmnt.id,'comment':cmnt.comment})
+                return comment_data
+            elif action == 'post_comment':
+                data = json.loads(request.data)
+                ticket_id = data['ticket_id']
+                comment = data['comment']
+                new_comment = Comments(ticket_id=ticket_id, comment=comment)
+                db.session.add(new_comment)
+                db.session.commit()
+                return 'success'
+        except:
+            action = json.loads(request.data)["formInput"]['action']
+            if action == 'create_ticket':
+                data = json.loads(request.data)["formInput"]
+                try:
+                    assigned_to_id = json.loads(request.data)['assigned_to_id']
+                    user_cred = UserInfo.query.filter_by(id=assigned_to_id).first()
+                    if user_cred is not None:
+                        user_info = UserInfo.query.filter_by(user_id=user_cred.id).first()
 
-                    user_id = user_info.id
+                        user_id = user_info.id
+                        due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
+
+                        status = data['status']
+                        description = data['description']
+                        created_date = datetime.datetime.now()
+                        user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
+                        team_id = user_info.team_id
+                        new_ticket = TicketTracker(assigned_user_id=user_id,
+                                                    due_date=due_date,
+                                                    created_date=created_date,
+                                                    status=status,
+                                                    description=description,
+                                                    assigned_department_id=team_id)
+                        db.session.add(new_ticket)
+                        db.session.commit()
+                        return 'success'
+                    else:
+                        due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
+
+                        status = data['status']
+                        description = data['description']
+                        created_date = datetime.datetime.now()
+
+                        team_name = int(data['team_name'])
+                        team_id = Teams.query.filter_by(team_name=team_name).first()
+                        new_ticket = TicketTracker(
+                                                    due_date=due_date,
+                                                    created_date=created_date,
+                                                    status=status,
+                                                    description=description,
+                                                    assigned_department_id=team_id.id)
+                        db.session.add(new_ticket)
+                        db.session.commit()
+                        return 'success'
+                except:
                     due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
 
                     status = data['status']
                     description = data['description']
                     created_date = datetime.datetime.now()
-                    user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
-                    team_id = user_info.team_id
-                    new_ticket = TicketTracker(assigned_user_id=user_id,
-                                                due_date=due_date,
-                                                created_date=created_date,
-                                                status=status,
-                                                description=description,
-                                                assigned_department_id=team_id)
-                    db.session.add(new_ticket)
-                    db.session.commit()
-                    return 'success'
-                else:
-                    due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
 
-                    status = data['status']
-                    description = data['description']
-                    created_date = datetime.datetime.now()
-
-                    team_id = int(data['team_id'])
+                    team_name = data['team_name']
+                    team_id = Teams.query.filter_by(team_name=team_name).first()
                     new_ticket = TicketTracker(
                                                 due_date=due_date,
                                                 created_date=created_date,
                                                 status=status,
                                                 description=description,
-                                                assigned_department_id=team_id)
+                                                assigned_department_id=team_id.id)
                     db.session.add(new_ticket)
                     db.session.commit()
                     return 'success'
-            except:
-                due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
-
-                status = data['status']
-                description = data['description']
-                created_date = datetime.datetime.now()
-
-                team_id = int(data['team_id'])
-                new_ticket = TicketTracker(
-                                            due_date=due_date,
-                                            created_date=created_date,
-                                            status=status,
-                                            description=description,
-                                            assigned_department_id=team_id)
-                db.session.add(new_ticket)
-                db.session.commit()
-                return 'success'
 
 
     @jwt_required()
@@ -277,6 +295,7 @@ class TicketsAPI(Resource):
             db.session.commit()
             return 'success'
         return 'failure'
+
 
 
 def hashing(password):
@@ -427,13 +446,17 @@ class userAPI(Resource):
     @jwt_required()
     def post(self):
         current_user = get_jwt_identity()
-        if current_user != 'manager':
+        user_log_cred = UsersLogIn.query.filter_by(username=current_user).first()
+        user_info_from = UserInfo.query.filter_by(user_id=user_log_cred.id).first()
+
+        if user_info_from.rank != 'manager':
             return f'NOT A MANAGER! {current_user}'
         data = json.loads(request.data)
-        team_id = data['team_id']
+        team_name = data['team_name']
+        team_id = Teams.query.filter_by(team_name=team_name).first()
 
         try:
-            user_info = UserInfo.query.filter_by(team_id=int(team_id)).all()
+            user_info = UserInfo.query.filter_by(team_id=int(team_id.id)).all()
             output = []
             for user in user_info:
                 # tickets = TicketTracker.query.filter_by(assigned_user_id=user.id).first()
