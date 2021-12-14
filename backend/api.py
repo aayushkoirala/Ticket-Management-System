@@ -116,44 +116,47 @@ class TeamAPI(Resource):
 class TicketsAPI(Resource):
     @jwt_required()
     def get(self):
-        # if 'user_id' not in session:
-        #     return
-        # user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
-        # if user_info.rank == 'manager':
-        #     tickets = TicketTracker.query.filter_by(assigned_department_id=user_info.team_id).all()
-        #     json_data = json.loads("{}")
+        user_name = get_jwt_identity()
+        user_cred = UsersLogIn.query.filter_by(username=user_name).first()
+        user_info = UserInfo.query.filter_by(user_id=user_cred.id).first()
+        if user_info.rank == 'manager':
+            tickets = TicketTracker.query.filter_by(assigned_department_id=user_info.team_id).all()
 
-        #     for i,ticket in enumerate(tickets):
-        #         user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
-        #         json_data.update({i:{'ticket_id':ticket.id,
-        #                             'assignee': user_info.name,
-        #                             'due_date':str(ticket.due_date),
-        #                             'status':ticket.status}})
-        #     return json_data
-        # elif user_info.rank == 'developer':
-        #     user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
-        #     tickets = TicketTracker.query.filter_by(assigned_user_id=user_info.id).all()
-        #     json_data = json.loads("{}")
-        #     for i,ticket in enumerate(tickets):
-        #         user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
-        #         json_data.update({i:{'ticket_id':ticket.id,
-        #                             'due_date':str(ticket.due_date),
-        #                             'status':ticket.status}})
-        #     return json_data
-        return
+            output = []
+            for i,ticket in enumerate(tickets):
+                user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
+                output.append({'ticket_id':ticket.id,
+                                    'assined_to': user_info.name,
+                                    'due_date':str(ticket.due_date),
+                                    'created_date':str(ticket.created_date),
+                                    'status':ticket.status,
+                                    'summary':ticket.description})
+
+            return output
+        elif user_info.rank == 'developer':
+            tickets = TicketTracker.query.filter_by(assigned_user_id=user_info.id).all()
+
+            output = []
+            for i,ticket in enumerate(tickets):
+                user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
+                output.append({'ticket_id':ticket.id,
+                                    'due_date':str(ticket.due_date),
+                                    'created_date':str(ticket.created_date),
+                                    'status':ticket.status,
+                                    'summary':ticket.description})
+            return output
     @jwt_required()
     def post(self):
         # if 'user_id' not in session:
         #     return
         action = json.loads(request.data)['action']
-        print(action)
+        
         if action == 'get_ticket_info':
             ticket_id = json.loads(request.data)['ticket_id']
             ticket_info = TicketTracker.query.filter_by(id=ticket_id).first()
             user_info = UserInfo.query.filter_by(id=ticket_info.assigned_user_id).first()
             team = Teams.query.filter_by(id=ticket_info.assigned_department_id).first()
 
-            json_data = json.loads("{}")
             ticket_info_out = []
             ticket_info_out.append({
                                             'ticket_id':ticket_info.id,
@@ -225,36 +228,7 @@ class TicketsAPI(Resource):
                 db.session.commit()
                 return 'success'
 
-        elif action == 'get':
-            user_name = json.loads(request.data)['user_name']
-            user_cred = UsersLogIn.query.filter_by(username=user_name).first()
-            user_info = UserInfo.query.filter_by(user_id=user_cred.id).first()
-            if user_info.rank == 'manager':
-                tickets = TicketTracker.query.filter_by(assigned_department_id=user_info.team_id).all()
-
-                output = []
-                for i,ticket in enumerate(tickets):
-                    user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
-                    output.append({'ticket_id':ticket.id,
-                                        'assined_to': user_info.name,
-                                        'due_date':str(ticket.due_date),
-                                        'created_date':str(ticket.created_date),
-                                        'status':ticket.status,
-                                        'summary':ticket.description})
-
-                return output
-            elif user_info.rank == 'developer':
-                tickets = TicketTracker.query.filter_by(assigned_user_id=user_info.id).all()
-
-                output = []
-                for i,ticket in enumerate(tickets):
-                    user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
-                    output.append({'ticket_id':ticket.id,
-                                        'due_date':str(ticket.due_date),
-                                        'created_date':str(ticket.created_date),
-                                        'status':ticket.status,
-                                        'summary':ticket.description})
-                return output
+        
     @jwt_required()
     def put(self):
         # if 'user_id' not in session:
@@ -276,6 +250,9 @@ class TicketsAPI(Resource):
             db.session.commit()
             return 'success'
         elif action == 'edit_ticket_assigned_to':
+            current_user = get_jwt_identity()
+            if current_user != 'manager':
+                return f'NOT A MANGER {current_user}' 
             data = json.loads(request.data)
             new_user_id = data['assigned_to_id']
             ticket_info = TicketTracker.query.filter_by(id=data['ticket_id']).first()
@@ -322,41 +299,47 @@ class CreateUser(Resource):
 class LoginAPI(Resource):
     def post(self):
         #session.pop('user_id', None)
-        try:
-            data = json.loads(request.data)
-            username = data['username']
-            password = data['password']
-            query_user = UsersLogIn.query.filter_by(username=username).first()
+        # try:
+        data = json.loads(request.data)
+        username = data['username']
+        password = data['password']
+        query_user = UsersLogIn.query.filter_by(username=username).first()
 
-            if query_user is not None:
-                hashed_salted = query_user.password
-                pattern = re.compile(r'[$]\w+[$]')
-                matches = pattern.finditer(hashed_salted)
-                for match in matches:
-                    salt = match[0][1:-1]
-                concat_pass_salt = password+salt
-                result = hashlib.md5(concat_pass_salt.encode())
-                pattern2 = re.compile(r'[$]\w+')
-                matches2 = pattern2.finditer(hashed_salted)
-                for matchs in matches2:
-                    right_part = matchs[0][1:]
-                if(result.hexdigest() == right_part):
-                    # update the redirect url to t.html?
-                    session['user_id'] = query_user.id
-                    #app.permanent_session_lifetime = timedelta(minutes=480)
-                    user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
-                    access_token = create_access_token(identity = data['username'])
-
-                    return {
-                        'rank': user_info.rank,
-                        'access_token': access_token
-                        }
-                    #return  user_info.rank
+        if query_user is not None:
+            hashed_salted = query_user.password
+            pattern = re.compile(r'[$]\w+[$]')
+            matches = pattern.finditer(hashed_salted)
+            for match in matches:
+                salt = match[0][1:-1]
+            concat_pass_salt = password+salt
+            result = hashlib.md5(concat_pass_salt.encode())
+            pattern2 = re.compile(r'[$]\w+')
+            matches2 = pattern2.finditer(hashed_salted)
+            for matchs in matches2:
+                right_part = matchs[0][1:]
+            if(result.hexdigest() == right_part):
+                # update the redirect url to t.html?
+                
+                #app.permanent_session_lifetime = timedelta(minutes=480)
+                user_info = UserInfo.query.filter_by(user_id=query_user.id).first()
+                access_token = create_access_token(identity = data['username'])
+                team = Teams.query.filter_by(id=user_info.team_id).first()
+                if team is None:
+                    team = 'admin'
                 else:
-                    return 'failure'
-            return 'failure'
-        except:
-            return 'failure'
+                    team = team.team_name
+                
+                return {
+                    'rank': user_info.rank,
+                    'team':team,
+                    'access_token': access_token
+                    }
+                #return  user_info.rank
+            else:
+                return 'failure'
+        return 'failure'
+        # except:
+        #     return 'failure'
 
     def delete(self):
         #session.pop('user_id', None)
@@ -424,14 +407,19 @@ class MessagesAPI(Resource):
 class userAPI(Resource):
     @jwt_required()
     def post(self):
+        current_user = get_jwt_identity()
+        if current_user != 'manager':
+            return f'NOT A MANAGER! {current_user}'
         data = json.loads(request.data)
         team_id = data['team_id']
+        
         try:
             user_info = UserInfo.query.filter_by(team_id=int(team_id)).all()
             output = []
             for user in user_info:
-                tickets = TicketTracker.query.filter_by(assigned_user_id=user.id).first()
-                if tickets is None:
+                # tickets = TicketTracker.query.filter_by(assigned_user_id=user.id).first()
+                # if tickets is None:
+                if user.rank is not 'manager':
                     output.append({"id":user.id, "name":user.name})
             return output
 
