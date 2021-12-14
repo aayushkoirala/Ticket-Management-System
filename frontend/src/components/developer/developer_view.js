@@ -59,38 +59,30 @@ function OutlinedCard() {
   function mapCards(ticket, index) {
     return (
       <Grid item xs={12} sm={6} md={4} key={index}>
-        <Card className={classes.root} variant="outlined">
-          <CardContent style={{ textAlign: "center" }}>
-            <Typography
-              className={classes.title}
-              color="textSecondary"
-              gutterBottom
-            ></Typography>
-            <Typography variant="h5" component="h2">
-              {ticket.ticket_id}
-            </Typography>
-            <Typography variant="h5" component="h2">
-              {ticket.assined_to}
-            </Typography>
-            <Typography variant="h5" component="h2">
-              {ticket.team}
-            </Typography>
-            <Typography variant="h5" component="h2">
-              {ticket.due_date}
-            </Typography>
-            <Typography variant="h5" component="h2">
-              {ticket.created_date}
-            </Typography>
-            <Typography variant="h5" component="h2">
-              {ticket.status}
-            </Typography>
-            <Typography variant="h5" component="h2">
-              {ticket.description}
-            </Typography>
-            
-          </CardContent>
-          <CardActions style={{ justifyContent: "center" }}>
-
+      <Card className={classes.root} variant="outlined">
+        <CardContent style={{ textAlign: "center" }}>
+          <Typography
+            className={classes.title}
+            color="textSecondary"
+            gutterBottom
+          ></Typography>
+          <Typography variant="h5" component="h2">
+            {ticket.description}
+          </Typography>
+          <Typography variant="body2">
+          <b>Status:</b> {ticket.status}
+          </Typography>
+          <Typography variant="body2">
+            <b>Created Date:</b> {ticket.created_date}
+          </Typography>
+          <Typography variant="body2">
+            <b>Due Date:</b> {ticket.created_date}
+          </Typography>
+          <Typography variant="body2">
+            <b>Assigned to:</b> {ticket.assined_to}
+          </Typography>
+        </CardContent>
+        <CardActions style={{ justifyContent: "center" }}>
           <Button
               onClick={() => {
                 console.log(ticket.type)
