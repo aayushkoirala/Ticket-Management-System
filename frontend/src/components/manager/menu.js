@@ -43,7 +43,7 @@ function OutlinedCard() {
 
     let formData = {
         "action":"get",
-        "user_name":"developer1"
+        "user_name":"manager1"
     }
     axios.post('https://team106.pythonanywhere.com/tickets_api', formData)
     .then(function (response) {
@@ -73,17 +73,21 @@ function OutlinedCard() {
               {hospital.ticket_id}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.due_date}
+              {hospital.summary}
             </Typography>
             <Typography variant="body2" component="p">
-              {hospital.status}
+              <b>Status:</b> {hospital.status}
+            </Typography>
+            <Typography variant="body2" component="p">
+            <b>Due:</b> {hospital.due_date}
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
             <Button
               onClick={() => {
                 console.log(hospital);
-                navigate("/");
+                localStorage.setItem("ticket_id", hospital.ticket_id)
+                navigate("/manager_view");
               }}
               size="small"
             >
@@ -108,15 +112,18 @@ function OutlinedCard() {
               <Typography variant="h5" component="h2">
                 Ticket Management System
               </Typography>
+              <Typography variant="body1" component="h2">
+                {localStorage.getItem('location')}
+              </Typography>
               <Typography variant="body2" component="p">
               <Button
               onClick={() => {
-                navigate("/insert_hospital");
+                navigate("/manager_insert");
               }}
               size="small"
               variant="outlined"
             >
-             
+             Insert Ticket
             </Button>
               </Typography>
             </CardContent>
