@@ -41,9 +41,6 @@ function OutlinedCard() {
 
   useEffect(() => getTicket(), []);
   const getTicket = () => {
-    if(localStorage.getItem("token") === " "){
-      navigate("/")
-    }
     axios
       .post("https://team106.pythonanywhere.com/tickets_api", {
         action: "get_comments_given_ticket",

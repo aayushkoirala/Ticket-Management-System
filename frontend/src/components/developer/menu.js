@@ -40,9 +40,6 @@ function OutlinedCard() {
 
   useEffect(() => getHospital(), []);
   const getHospital = () => {
-    if(localStorage.getItem("token") === " "){
-      navigate("/")
-    }
     axios.get('https://team106.pythonanywhere.com/tickets_api')
     .then(function (response) {
       console.log(response.data)
