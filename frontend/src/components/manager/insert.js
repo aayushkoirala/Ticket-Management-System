@@ -66,14 +66,17 @@ function MaterialUIFormSubmit(props) {
   const [formInput, setFormInput] = useReducer(
     (state, newState) => ({ ...state, ...newState }),
     {
-      team_id:"1",
+      "assigned_to_id": " ",
     }
   );
 
   const handleSubmit = (evt) => {
     evt.preventDefault();
+    formInput["action"] = "create_ticket"
+    formInput["team_name"] = localStorage.getItem("team")
     let data = { formInput };
-    
+
+    console.log(data)
     axios.post('', data)
     .then(function (response) {
       console.log(response.data);

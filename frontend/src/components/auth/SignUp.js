@@ -11,6 +11,11 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 
 function Copyright(props) {
     return (
@@ -23,15 +28,37 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function SignUp() {
+    
+
+    const [team, setTeam] = React.useState('');
+
+    const handleChange = (event) => {
+        setTeam(event.target.value);
+    };
+
     const navigate = useNavigate();
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        // eslint-disable-next-line no-console
-        console.log({
-            email: data.get('email'),
+        let full_name = data.get('firstName') + " " + data.get('lastName')
+        let formData = {
+            name: full_name,
+            username: data.get('username'),
             password: data.get('password'),
-        });
+            team_id: team
+        };
+        console.log(formData);
+
+        axios.post('https://team106.pythonanywhere.com/create_user', formData)
+            .then(function (response) {
+                alert("sucess!")
+                navigate("/login")
+            })
+            .catch(function (error) {
+                console.log(error);
+                alert("SignUp Failed, Try Again")
+            });
     };
 
     return (
@@ -95,6 +122,31 @@ export default function SignUp() {
                                     id="password"
                                     autoComplete="new-password"
                                 />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <center>
+                                    <FormControl variant="standard" sx={{ m: 1, minWidth: 120 }}>
+                                        <InputLabel id="demo-simple-select-standard-label">Team</InputLabel>
+                                        <Select
+                                            labelId="demo-simple-select-standard-label"
+                                            id="demo-simple-select-standard"
+                                            value={team}
+                                            onChange={handleChange}
+                                            label="Team"
+                                        >
+                                            <MenuItem value="">
+                                                <em>None</em>
+                                            </MenuItem>
+                                            <MenuItem value={1}>Frontend</MenuItem>
+                                            <MenuItem value={2}>Backend</MenuItem>
+                                            <MenuItem value={3}>UI/UX</MenuItem>
+                                        </Select>
+                                    </FormControl>
+
+
+                                </center>
+
                             </Grid>
                         </Grid>
                         <Button
