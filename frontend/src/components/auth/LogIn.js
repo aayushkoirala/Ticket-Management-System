@@ -42,7 +42,7 @@ export default function SignIn() {
 
                 if (rank == "developer") {
                     console.log("sucess")
-                    //navigate('/developer_menu')
+                    navigate('/developer_menu')
                 }
                 else if (rank == "manager") {
                     console.log("2")

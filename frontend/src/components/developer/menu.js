@@ -41,9 +41,18 @@ function OutlinedCard() {
   useEffect(() => getHospital(), []);
   const getHospital = () => {
 
-    axios.get("https://team106.pythonanywhere.com//tickets_api").then((response) => {
+    let formData = {
+        "action":"get",
+        "user_name":"developer1"
+    }
+    axios.post('https://team106.pythonanywhere.com/tickets_api', formData)
+    .then(function (response) {
       console.log(response.data)
-      setHospital(response.data);
+      setHospital(response.data)
+    })
+    .catch(function (error) {
+        console.log(error);
+        alert("Login Failed, Try Again")
     });
     
   };
@@ -61,10 +70,13 @@ function OutlinedCard() {
               gutterBottom
             ></Typography>
             <Typography variant="h5" component="h2">
-              {hospital.name}
+              {hospital.ticket_id}
+            </Typography>
+            <Typography variant="h5" component="h2">
+              {hospital.due_date}
             </Typography>
             <Typography variant="body2" component="p">
-              {hospital.address}
+              {hospital.status}
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
@@ -75,7 +87,7 @@ function OutlinedCard() {
               }}
               size="small"
             >
-              Select Hospital
+              Select Ticket
             </Button>
             <Button
               onClick={() => {
@@ -84,7 +96,7 @@ function OutlinedCard() {
               }}
               size="small"
             >
-              Edit Hospital
+              Edit Ticket
             </Button>
           </CardActions>
         </Card>
@@ -103,7 +115,7 @@ function OutlinedCard() {
                 gutterBottom
               ></Typography>
               <Typography variant="h5" component="h2">
-                Hospital Management System
+                Ticket Management System
               </Typography>
               <Typography variant="body2" component="p">
               <Button
@@ -113,7 +125,7 @@ function OutlinedCard() {
               size="small"
               variant="outlined"
             >
-              Add Hospital
+             
             </Button>
               </Typography>
             </CardContent>
@@ -127,7 +139,7 @@ function OutlinedCard() {
         className={cards.gridContainer}
         justifyContent="center"
       >
-        {/* {hospital.map(mapCards)} */}
+        {hospital.map(mapCards)}
       </Grid>
     </div>
   );
