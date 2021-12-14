@@ -38,14 +38,34 @@ function OutlinedCard() {
   const navigate = useNavigate();
   const [hospital, setHospital] = useState([]);
 
+//   adding a new const for comments
+ const [comments,setComments] = useState([]);
+ useEffect(() => getComments(), []);
+ const getComments = () => {
+
+    let formData = {
+        "action":"get_comments_given_ticke",
+        "ticket_id":"developer1"
+    }
+    axios.post('https://team106.pythonanywhere.com/tickets_api',formData)
+    .then(function (response) {
+      console.log(response.data)
+      setComments(response.data)
+    })
+    .catch(function (error) {
+        console.log(error);
+        alert("Login Failed, Try Again")
+    });
+ };
+
   useEffect(() => getHospital(), []);
   const getHospital = () => {
 
     let formData = {
-        "action":"get",
-        "user_name":"developer1"
+        "action":"get_ticket_info",
+        "ticket_id":"developer1"
     }
-    axios.get('https://team106.pythonanywhere.com/tickets_api')
+    axios.post('https://team106.pythonanywhere.com/tickets_api',formData)
     .then(function (response) {
       console.log(response.data)
       setHospital(response.data)
@@ -59,7 +79,7 @@ function OutlinedCard() {
   const classes = useStyles();
   const cards = cardStyles();
 
-  function mapCards(hospital, index) {
+  function mapCards(hospital, index,comments) {
     return (
       <Grid item xs={12} sm={6} md={4} key={index}>
         <Card className={classes.root} variant="outlined">
@@ -75,7 +95,7 @@ function OutlinedCard() {
             <Typography variant="h5" component="h2">
               {hospital.assined_to}
             </Typography>
-            <Typography variant="body2" component="p">
+            <Typography variant="h5" component="h2">
               {hospital.team}
             </Typography>
             <Typography variant="h5" component="h2">
@@ -84,11 +104,20 @@ function OutlinedCard() {
             <Typography variant="h5" component="h2">
               {hospital.created_date}
             </Typography>
-            <Typography variant="body2" component="p">
+            <Typography variant="h5" component="h2">
               {hospital.status}
             </Typography>
-            <Typography variant="body2" component="p">
+            <Typography variant="h5" component="h2">
               {hospital.description}
+            </Typography>
+            <Typography variant="h5" component="h2">
+            <b>Messages:</b> 
+            </Typography>
+            <Typography variant="body2" component="p">
+              <b>ID:</b> {comments.id}
+            </Typography>
+            <Typography variant="body2" component="p">
+              <b>Message:</b> {comments.comment}
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
