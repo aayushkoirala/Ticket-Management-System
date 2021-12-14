@@ -106,7 +106,7 @@ function OutlinedCard() {
               onClick={() => {
                 console.log(hospital);
                 localStorage.setItem("ticket_id", hospital.ticket_id)
-                navigate("/comments");
+                navigate("/comments/comment");
               }}
               size="small"
             >
