@@ -93,11 +93,12 @@ function MaterialUIFormSubmit(props) {
     formInput["action"] = "edit_ticket"
     formInput["team_name"] = localStorage.getItem("team")
     formInput["assigned_id_to"] = selected.id
+    formInput["ticket_id"] = localStorage.getItem('ticket_id')
     let data = { formInput };
 
     console.log(data)
 
-    axios.post('https://team106.pythonanywhere.com/tickets_api', data)
+    axios.put('https://team106.pythonanywhere.com/tickets_api', data)
       .then(function (response) {
         console.log(response.data);
       })

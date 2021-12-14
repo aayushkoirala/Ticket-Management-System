@@ -39,9 +39,6 @@ export default function SignIn() {
         axios.post('https://team106.pythonanywhere.com/login', formData)
             .then(function (response) {
                 let data = response.data
-                if (data != "admin" || data != "developer" || data != "manager") {
-                    alert("Login Failed, try again.")
-                }
                 let rank = data.rank
                 console.log(rank)
                 localStorage.setItem("token", data.access_token)
