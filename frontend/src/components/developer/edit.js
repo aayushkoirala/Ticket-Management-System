@@ -15,7 +15,7 @@ const cardStyles = makeStyles({
 
 function MaterialUIFormSubmit(props) {
   const navigate = useNavigate();
-  const [status, setStatus] = useState([]);
+  const [statuses, setStatus] = useState([]);
   const [loading, setLoading] = useState(false);
   useEffect(() => getDoctor(), []);
   const getDoctor = () => {
@@ -101,10 +101,10 @@ function MaterialUIFormSubmit(props) {
                   gutterBottom
                 ></Typography>
                 <Typography variant="h5" component="h2">
-                  {localStorage.getItem("hospital_name")}
+                  {localStorage.getItem("assined_to")}
                 </Typography>
                 <Typography variant="body2" component="p">
-                  {localStorage.getItem("hospital_address")}
+                  {localStorage.getItem("due_date")}
                 </Typography>
               </CardContent>
             </Card>
@@ -122,8 +122,8 @@ function MaterialUIFormSubmit(props) {
               <TextField
                 label="Status"
                 id="margin-normal"
-                name="name"
-                defaultValue={doctor[0]['name']}
+                name="status"
+                defaultValue={statuses[0]['status']}
                 className={classes.textField}
                 helperText="Enter new Status"
                 onChange={handleInput}
