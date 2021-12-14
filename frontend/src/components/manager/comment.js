@@ -37,6 +37,7 @@ const cardStyles = makeStyles({
 function OutlinedCard() {
   const navigate = useNavigate();
   const [ticket, setTicket] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => getTicket(), []);
   const getTicket = () => {
@@ -45,12 +46,13 @@ function OutlinedCard() {
     }
     axios
       .post("https://team106.pythonanywhere.com/tickets_api", {
-        action: "get_ticket_info",
+        action: "get_comments_given_ticket",
         ticket_id: localStorage.getItem("ticket_id"),
       })
       .then(function (response) {
         console.log(response.data);
         setTicket(response.data);
+        setLoading(true)
       })
       .catch(function (error) {
         console.log(error);
@@ -70,86 +72,79 @@ function OutlinedCard() {
               gutterBottom
             ></Typography>
             <Typography variant="h5" component="h2">
-              {ticket.description}
+              {ticket.ticket_id}
             </Typography>
-            <Typography variant="body2">
-            <b>Status:</b> {ticket.status}
+            <Typography variant="h5" component="h2">
+              {ticket.summary}
             </Typography>
-            <Typography variant="body2">
-              <b>Created Date:</b> {ticket.created_date}
-            </Typography>
-            <Typography variant="body2">
-              <b>Due Date:</b> {ticket.created_date}
-            </Typography>
-            <Typography variant="body2">
-              <b>Assigned to:</b> {ticket.assined_to}
+            <Typography variant="body2" component="p">
+                <b>{ticket.comment}</b>
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
-            <Button
-              onClick={() => {
-                console.log(ticket.type)
-                navigate("/manager_edit");
-              }}
-              size="small"
-            >
-              Edit ticket
-            </Button>
-            <Button
-              onClick={() => {
-                console.log(ticket.type)
-                navigate("/manager_comment");
-              }}
-              size="small"
-            >
-              Check comments
-            </Button>
           </CardActions>
         </Card>
       </Grid>
     );
   }
-  return (
-    <div>
+
+  function renderItems() {
+    return (
       <div>
-        <center>
-          <Card className={cards.root} variant="outlined">
-            <CardContent>
-              <Typography
-                className="Hospital"
-                color="textSecondary"
-                gutterBottom
-              ></Typography>
-              <Typography variant="h5" component="h2">
-                Ticket Management System
-              </Typography>
-              <Typography variant="body1" component="h2">
-              {localStorage.getItem('team')}
-              </Typography>
-              <Button
-                onClick={() => {
-                  navigate("/manager_menu");
-                }}
-                size="small"
-                variant="outlined"
-              >
-                View tickets
-              </Button>
-            </CardContent>
-          </Card>
-        </center>
-        &nbsp;
+        <div>
+          <center>
+            <Card className={cards.root} variant="outlined">
+              <CardContent>
+                <Typography
+                  className="Ticket"
+                  color="textSecondary"
+                  gutterBottom
+                ></Typography>
+                <Typography variant="h5" component="h2">
+                 <b>Comments</b>
+                </Typography>
+                <Typography variant="body1" component="h2" justifyContent="">
+                  {localStorage.getItem('team')}
+                </Typography>
+                <Typography variant="body2" component="p">
+                  <Button
+                    onClick={() => {
+                      navigate("/manager_menu");
+                    }}
+                    size="small"
+                    variant="outlined"
+                  >
+                    View Tickets
+                  </Button>
+                  <Button
+                    onClick={() => {
+                    navigate("/manager_comment_insert");
+                    }}
+                    size="small"
+                    variant="outlined"
+                  >
+                    Insert Comments
+                  </Button>
+                </Typography>
+              </CardContent>
+            </Card>
+          </center>
+          &nbsp;
+        </div>
+        <Grid
+          container
+          spacing={4}
+          className={cards.gridContainer}
+          justifyContent="center"
+        >
+          {ticket.map(mapCards)}
+        </Grid>
       </div>
-      <Grid
-        container
-        spacing={4}
-        className={cards.gridContainer}
-        justifyContent="center"
-      >
-        {ticket.map(mapCards)}
-      </Grid>
-    </div>
-  );
+    );
+
+  }
+
+  return loading ? <div>{renderItems()}</div> : <div>loading...</div>;
 }
 
 export default OutlinedCard;

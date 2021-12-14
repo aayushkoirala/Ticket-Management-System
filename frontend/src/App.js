@@ -6,6 +6,8 @@ import Manager_Menu from "./components/manager/menu";
 import Manager_Insert from "./components/manager/insert";
 import Manager_View from "./components/manager/view";
 import Manager_Edit from "./components/manager/edit";
+import Manager_Comment from "./components/manager/comment";
+import Manager_Comment_Insert from "./components/manager/insert_comment";
 import axios from "axios";
 import { Route, Routes, BrowserRouter as Router } from "react-router-dom";
 
@@ -32,6 +34,8 @@ function App() {
         <Route path="/manager_insert" element={<Manager_Insert />} />
         <Route path="/manager_view" element={<Manager_View />} />
         <Route path="/manager_edit" element={<Manager_Edit />} />
+        <Route path="/manager_comment" element={<Manager_Comment />} />
+        <Route path="/manager_comment_insert" element={<Manager_Comment_Insert />} />
       </Routes>
     </Router>
   );
