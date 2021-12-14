@@ -53,7 +53,7 @@ export default function SignUp() {
         axios.post('https://team106.pythonanywhere.com/create_user', formData)
             .then(function (response) {
                 alert("sucess!")
-                navigate("/login")
+                navigate("/")
             })
             .catch(function (error) {
                 console.log(error);

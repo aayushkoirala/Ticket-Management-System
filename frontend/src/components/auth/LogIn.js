@@ -25,7 +25,7 @@ const theme = createTheme();
 
 export default function SignIn() {
     const navigate = useNavigate();
-    
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -39,8 +39,8 @@ export default function SignIn() {
         axios.post('https://team106.pythonanywhere.com/login', formData)
             .then(function (response) {
                 let data = response.data
-                if (data == "undefined"){
-                    alert("Error, try again.")
+                if (data != "admin" || data != "developer" || data != "manager") {
+                    alert("Login Failed, try again.")
                 }
                 let rank = data.rank
                 console.log(rank)
@@ -53,14 +53,15 @@ export default function SignIn() {
                 else if (rank == "manager") {
                     navigate('/manager_menu')
                 }
-                else if (rank == "admin"){
+                else if (rank == "admin") {
                     navigate('//team106.pythonanywhere.com/admin/')
                 }
-                
+
             })
             .catch(function (error) {
-                console.log(error);
                 alert("Login Failed, Try Again")
+                console.log(error);
+
             });
     };
 
