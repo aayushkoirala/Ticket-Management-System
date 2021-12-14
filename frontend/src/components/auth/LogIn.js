@@ -53,6 +53,9 @@ export default function SignIn() {
                 else if (rank == "manager") {
                     navigate('/manager_menu')
                 }
+                else if (rank == "admin"){
+                    navigate('//team106.pythonanywhere.com/admin/')
+                }
                 
             })
             .catch(function (error) {
@@ -114,13 +117,6 @@ export default function SignIn() {
                                     navigate('/signup')
                                 }}>
                                     {"Don't have an account? Sign Up"}
-                                </Link>
-                            </Grid>
-                            <Grid item>
-                                <Link href="#" variant="body2" onClick={() => {
-                                    navigate('//team106.pythonanywhere.com/admin/')
-                                }}>
-                                    {"Are you an Admin? Visit Admin"}
                                 </Link>
                             </Grid>
                         </Grid>
