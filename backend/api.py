@@ -105,7 +105,6 @@ db.create_all()
 
 
 class TeamAPI(Resource):
-    @jwt_required
     def get(self):
         #needs to be open because when creating a new user
         teams = Teams.query.all()
@@ -115,6 +114,7 @@ class TeamAPI(Resource):
         return team_list
 
 class TicketsAPI(Resource):
+    @jwt_required()
     def get(self):
         # if 'user_id' not in session:
         #     return
@@ -141,6 +141,7 @@ class TicketsAPI(Resource):
         #                             'status':ticket.status}})
         #     return json_data
         return
+    @jwt_required()
     def post(self):
         # if 'user_id' not in session:
         #     return
@@ -254,7 +255,7 @@ class TicketsAPI(Resource):
                                         'status':ticket.status,
                                         'summary':ticket.description})
                 return output
-
+    @jwt_required()
     def put(self):
         # if 'user_id' not in session:
         #     return
@@ -299,27 +300,21 @@ def hashing(password):
 
 class CreateUser(Resource):
     def post(self):
-        data = json.loads(request.data)
-        username = data['username']
-        password = hashing(data['password'])
-        team_id = data['team_id']
-        name = data['name']
-        rank = 'developer' #developer or manager
-        new_user_login = UsersLogIn(username=username, password=password)
-        db.session.add(new_user_login)
-        db.session.commit()
-        #inserting data
-        new_user_info = UserInfo(name=name, rank=rank, team_id=int(team_id), user_id=new_user_login.id)
-        db.session.add(new_user_info)
-        db.session.commit()
         try:
-            access_token = create_access_token(identity = data['username'])
-            refresh_token = create_refresh_token(identity = data['username'])
-            return {
-                'message': 'User {} was created'.format(data['username']),
-                'access_token': access_token,
-                'refresh_token': refresh_token
-                }
+            data = json.loads(request.data)
+            username = data['username']
+            password = hashing(data['password'])
+            team_id = data['team_id']
+            name = data['name']
+            rank = 'developer' #developer or manager
+            new_user_login = UsersLogIn(username=username, password=password)
+            db.session.add(new_user_login)
+            db.session.commit()
+            #inserting data
+            new_user_info = UserInfo(name=name, rank=rank, team_id=int(team_id), user_id=new_user_login.id)
+            db.session.add(new_user_info)
+            db.session.commit()
+            return "2000 ok"
         except:
             return {'message': 'Something went wrong'}, 500
 
@@ -349,13 +344,12 @@ class LoginAPI(Resource):
                     # update the redirect url to t.html?
                     session['user_id'] = query_user.id
                     #app.permanent_session_lifetime = timedelta(minutes=480)
-                    #user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
+                    user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
                     access_token = create_access_token(identity = data['username'])
-                    refresh_token = create_refresh_token(identity = data['username'])
+
                     return {
-                        'message': 'Logged in as {}'.format(username),
-                        'access_token': access_token,
-                        'refresh_token': refresh_token
+                        'rank': user_info.rank,
+                        'access_token': access_token
                         }
                     #return  user_info.rank
                 else:
@@ -369,13 +363,14 @@ class LoginAPI(Resource):
         return 'success'
 
 class MessagesAPI(Resource):
+    @jwt_required()
     def get(self):
         users = UserInfo.query.all()
         output = []
         for user in users:
             output.append(user.name)
         return output
-
+    @jwt_required()
     def post(self): #get msgs (current logged in user + from id), post msgs
         # if 'user_id' not in session:
         #     return
@@ -427,6 +422,7 @@ class MessagesAPI(Resource):
             return 'success on sending the msg'
 
 class userAPI(Resource):
+    @jwt_required()
     def post(self):
         data = json.loads(request.data)
         team_id = data['team_id']
@@ -442,12 +438,16 @@ class userAPI(Resource):
         except:
             return "{}"
 
+
+
+
 api.add_resource(TicketsAPI, '/tickets_api')
 api.add_resource(LoginAPI, '/login')
 api.add_resource(CreateUser, '/create_user')
 api.add_resource(TeamAPI, '/team_info')
 api.add_resource(MessagesAPI, '/messages')
 api.add_resource(userAPI, '/users')
+
 
 
 
