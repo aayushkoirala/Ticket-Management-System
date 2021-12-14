@@ -41,7 +41,8 @@ export default function SignIn() {
                 let rank = response.data;
 
                 if (rank == "developer") {
-                    console.log("1")
+                    console.log("sucess")
+                    //navigate('/developer_menu')
                 }
                 else if (rank == "manager") {
                     console.log("2")

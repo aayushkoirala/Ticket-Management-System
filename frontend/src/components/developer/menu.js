@@ -41,7 +41,8 @@ function OutlinedCard() {
   useEffect(() => getHospital(), []);
   const getHospital = () => {
 
-    axios.get("").then((response) => {
+    axios.get("https://team106.pythonanywhere.com//tickets_api").then((response) => {
+      console.log(response.data)
       setHospital(response.data);
     });
     
@@ -126,7 +127,7 @@ function OutlinedCard() {
         className={cards.gridContainer}
         justifyContent="center"
       >
-        {hospital.map(mapCards)}
+        {/* {hospital.map(mapCards)} */}
       </Grid>
     </div>
   );
