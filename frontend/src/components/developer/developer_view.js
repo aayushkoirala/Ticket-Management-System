@@ -36,27 +36,8 @@ const cardStyles = makeStyles({
 
 function OutlinedCard() {
   const navigate = useNavigate();
-  const [hospital, setHospital] = useState([]);
+  const [tickets, setHospital] = useState([]);
 
-//   adding a new const for comments
- const [comments,setComments] = useState([]);
- useEffect(() => getComments(), []);
- const getComments = () => {
-
-    let formData = {
-        "action":"get_comments_given_ticke",
-        "ticket_id":"developer1"
-    }
-    axios.post('https://team106.pythonanywhere.com/tickets_api',formData)
-    .then(function (response) {
-      console.log(response.data)
-      setComments(response.data)
-    })
-    .catch(function (error) {
-        console.log(error);
-        alert("Login Failed, Try Again")
-    });
- };
 
   useEffect(() => getHospital(), []);
   const getHospital = () => {
@@ -79,7 +60,7 @@ function OutlinedCard() {
   const classes = useStyles();
   const cards = cardStyles();
 
-  function mapCards(hospital, index,comments) {
+  function mapCards(tickets, index) {
     return (
       <Grid item xs={12} sm={6} md={4} key={index}>
         <Card className={classes.root} variant="outlined">
@@ -90,61 +71,54 @@ function OutlinedCard() {
               gutterBottom
             ></Typography>
             <Typography variant="h5" component="h2">
-              {hospital.ticket_id}
+              {tickets.ticket_id}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.assined_to}
+              {tickets.assined_to}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.team}
+              {tickets.team}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.due_date}
+              {tickets.due_date}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.created_date}
+              {tickets.created_date}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.status}
+              {tickets.status}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.description}
+              {tickets.description}
             </Typography>
-            <Typography variant="h5" component="h2">
-            <b>Messages:</b> 
-            </Typography>
-            <Typography variant="body2" component="p">
-              <b>ID:</b> {comments.id}
-            </Typography>
-            <Typography variant="body2" component="p">
-              <b>Message:</b> {comments.comment}
-            </Typography>
+            
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
+
+          <Button
+              onClick={() => {
+                console.log(tickets.type)
+                navigate("/comment");
+              }}
+              size="small"
+            >
+              Check comments
+            </Button>
             <Button
               onClick={() => {
-                console.log(hospital);
-                localStorage.setItem("ticket_id", hospital.ticket_id)
+                console.log(tickets);
+                localStorage.setItem("ticket_id", tickets.ticket_id)
                 navigate("/messages/msg");
               }}
               size="small"
             >
               Message
             </Button>
+           
             <Button
               onClick={() => {
-                console.log(hospital);
-                localStorage.setItem("ticket_id", hospital.ticket_id)
-                navigate("/comments/comment");
-              }}
-              size="small"
-            >
-              Create Comment
-            </Button>
-            <Button
-              onClick={() => {
-                console.log(hospital);
-                localStorage.setItem("ticket_id", hospital.ticket_id)
+                console.log(tickets);
+                localStorage.setItem("ticket_id", tickets.ticket_id)
                 navigate("/edit");
               }}
               size="small"
@@ -192,17 +166,15 @@ function OutlinedCard() {
               <Typography variant="h5" component="h2">
                 Developer:
               </Typography>
-              <Typography variant="body2" component="p">
               <Button
-              onClick={() => {
-                navigate("/insert_hospital");
-              }}
-              size="small"
-              variant="outlined"
-            >
-             
-            </Button>
-              </Typography>
+                onClick={() => {
+                  navigate("/menu");
+                }}
+                size="small"
+                variant="outlined"
+              >
+                View tickets
+              </Button>
             </CardContent>
           </Card>
         </center>
@@ -214,7 +186,7 @@ function OutlinedCard() {
         className={cards.gridContainer}
         justifyContent="center"
       >
-        {hospital.map(mapCards)}
+        {tickets.map(mapCards)}
       </Grid>
     </div>
   );
