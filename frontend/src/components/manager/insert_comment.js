@@ -1,10 +1,31 @@
-import React, { useReducer } from "react";
-import { Button, TextField, Paper, Typography } from "@material-ui/core";
+import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
+import Button from "@material-ui/core/Button";
+import Typography from "@material-ui/core/Typography";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
+import { Grid } from "@material-ui/core";
+import { useNavigate } from "react-router-dom";
+
+const useStyles = makeStyles({
+  root: {
+    minWidth: 200,
+  },
+  bullet: {
+    display: "inline-block",
+    margin: "0 2px",
+    transform: "scale(0.8)",
+  },
+  title: {
+    fontSize: 14,
+  },
+  pos: {
+    marginBottom: 12,
+  },
+});
 
 const cardStyles = makeStyles({
   gridContainer: {
@@ -13,106 +34,117 @@ const cardStyles = makeStyles({
   },
 });
 
-function MaterialUIFormSubmit(props) {
+function OutlinedCard() {
   const navigate = useNavigate();
-  const cards = cardStyles();
-  const useStyles = makeStyles((theme) => ({
-    button: {
-      margin: theme.spacing(1),
-    },
-    root: {
-      padding: theme.spacing(3, 2),
-    },
-    container: {
-      display: "flex",
-      flexWrap: "wrap",
-    },
-    textField: {
-      marginLeft: theme.spacing(1),
-      marginRight: theme.spacing(1),
-      width: 400,
-    },
-  }));
+  const [ticket, setTicket] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [formInput, setFormInput] = useReducer(
-    (state, newState) => ({ ...state, ...newState })
-  );
-
-  const handleSubmit = (evt) => {
-    evt.preventDefault();
-    formInput["action"] = "post_comment";
-    formInput["ticket_id"] = localStorage.getItem("ticket_id");
-    let data = { formInput };
-
-    axios.post('https://team106.pythonanywhere.com/tickets_api', data)
-    .then(function (response) {
-      console.log(response.data);
-      navigate('/manager_comment')
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-
-    console.log(data);
+  useEffect(() => getTicket(), []);
+  const getTicket = () => {
+    if(localStorage.getItem("token") === " "){
+      navigate("/")
+    }
+    axios
+      .post("https://team106.pythonanywhere.com/tickets_api", {
+        action: "get_comments_given_ticket",
+        ticket_id: localStorage.getItem("ticket_id"),
+      })
+      .then(function (response) {
+        console.log(response.data);
+        setTicket(response.data);
+        setLoading(true)
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   };
-
-  const handleInput = (evt) => {
-    const name = evt.target.name;
-    const newValue = evt.target.value;
-    setFormInput({ [name]: newValue });
-  };
-
   const classes = useStyles();
+  const cards = cardStyles();
 
-  return (
-    <div>
+  function mapCards(ticket, index) {
+    return (
+      <Grid item xs={12} sm={6} md={4} key={index}>
+        <Card className={classes.root} variant="outlined">
+          <CardContent style={{ textAlign: "center" }}>
+            <Typography
+              className={classes.title}
+              color="textSecondary"
+              gutterBottom
+            ></Typography>
+            <Typography variant="h5" component="h2">
+              {ticket.ticket_id}
+            </Typography>
+            <Typography variant="h5" component="h2">
+              {ticket.summary}
+            </Typography>
+            <Typography variant="body2" component="p">
+                <b>{ticket.comment}</b>
+            </Typography>
+          </CardContent>
+          <CardActions style={{ justifyContent: "center" }}>
+          </CardActions>
+        </Card>
+      </Grid>
+    );
+  }
+
+  function renderItems() {
+    return (
       <div>
-      <center>
-          <Card className={cards.root} variant="outlined">
-            <CardContent>
-              <Typography
-                className="Comment"
-                color="textSecondary"
-                gutterBottom
-              ></Typography>
-              <Typography variant="h5" component="h2">
-                <b>Insert Comment</b>
-              </Typography>
-            </CardContent>
-          </Card>
-        </center>
-        &nbsp;
+        <div>
+          <center>
+            <Card className={cards.root} variant="outlined">
+              <CardContent>
+                <Typography
+                  className="Ticket"
+                  color="textSecondary"
+                  gutterBottom
+                ></Typography>
+                <Typography variant="h5" component="h2">
+                 <b>Comments</b>
+                </Typography>
+                <Typography variant="body1" component="h2" justifyContent="">
+                  {localStorage.getItem('team')}
+                </Typography>
+                <Typography variant="body2" component="p">
+                  <Button
+                    onClick={() => {
+                      navigate("/manager_menu");
+                    }}
+                    size="small"
+                    variant="outlined"
+                  >
+                    View Tickets
+                  </Button>
+                  <Button
+                    onClick={() => {
+                    navigate("/manager_comment_insert");
+                    }}
+                    size="small"
+                    variant="outlined"
+                  >
+                    Insert Comments
+                  </Button>
+                </Typography>
+              </CardContent>
+            </Card>
+          </center>
+          &nbsp;
+        </div>
+        <Grid
+          container
+          spacing={4}
+          className={cards.gridContainer}
+          justifyContent="center"
+        >
+          {ticket.map(mapCards)}
+        </Grid>
       </div>
-      <Paper className={classes.root} justifycontent="center">
-        <center>
-          <Typography variant="h5" component="h3">
-            {props.formName}
-          </Typography>
-          <Typography component="p">{props.formDescription}</Typography>
+    );
 
-          <form onSubmit={handleSubmit}>
-            <TextField
-              label="Comment"
-              id="margin-normal"
-              name="comment"
-              defaultValue={""}
-              className={classes.textField}
-              helperText="Enter comment"
-              onChange={handleInput}
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              className={classes.button}
-            >
-              Submit
-            </Button>
-          </form>
-        </center>
-      </Paper>
-    </div>
-  );
+  }
+
+  return loading ? <div>{renderItems()}</div> : <div>loading...</div>;
 }
 
-export default MaterialUIFormSubmit;
+export default OutlinedCard;

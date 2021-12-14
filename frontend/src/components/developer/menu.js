@@ -40,10 +40,8 @@ function OutlinedCard() {
 
   useEffect(() => getHospital(), []);
   const getHospital = () => {
-
-    let formData = {
-        "action":"get",
-        "user_name":"developer1"
+    if(localStorage.getItem("token") === " "){
+      navigate("/")
     }
     axios.get('https://team106.pythonanywhere.com/tickets_api')
     .then(function (response) {
@@ -73,10 +71,13 @@ function OutlinedCard() {
               {hospital.ticket_id}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.due_date}
+              {hospital.summary}
             </Typography>
             <Typography variant="body2" component="p">
-              {hospital.status}
+              <b>Status:</b> {hospital.status}
+            </Typography>
+            <Typography variant="body2" component="p">
+              <b>Due:</b> {hospital.due_date}
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
@@ -98,25 +99,6 @@ function OutlinedCard() {
   return (
     <div>
       <div>
-        <left>
-        <Typography variant="h5" component="h2">
-                Hello,
-              </Typography>
-        </left>
-        <right>
-        <Typography variant="body2" component="p">
-              <Button
-
-              onClick={() => {
-                navigate("/logout");
-              }}
-              size="small"
-              variant="outlined"
-            >
-             Logout
-            </Button>
-              </Typography>
-        </right>
         <center>
           <Card className={cards.root} variant="outlined">
             <CardContent>
@@ -129,19 +111,27 @@ function OutlinedCard() {
                 Ticket Management System
               </Typography>
               <Typography variant="h5" component="h2">
-                Developer:
+              {localStorage.getItem('team')}
               </Typography>
               <Typography variant="body2" component="p">
-              <Button
-              onClick={() => {
-                navigate("/insert_hospital");
-              }}
-              size="small"
-              variant="outlined"
-            >
-             
-            </Button>
               </Typography>
+              <Typography variant="body2" component="p">
+                  <Button
+                    style={{ backgroundColor: "red", color: "#FFFFFF" }}
+                    onClick={() => {
+                      localStorage.setItem("token", " ")
+                      navigate("/")
+                    }}
+                    size="small"
+                    variant="outlined"
+                    className={classes.button}
+                  >
+                    Logout
+                  </Button>
+                  <Typography variant="body1" component="h2" justifyContent="">
+                    Hello, <b>{localStorage.getItem('name')}</b>
+                  </Typography>
+                </Typography>
             </CardContent>
           </Card>
         </center>

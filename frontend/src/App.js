@@ -2,12 +2,15 @@ import "./App.css";
 import SignUp from "./components/auth/SignUp";
 import LogIn from "./components/auth/LogIn";
 import Developer_Menu from "./components/developer/menu";
+import Developer_View from "./components/developer/developer_view";
 import Manager_Menu from "./components/manager/menu";
 import Manager_Insert from "./components/manager/insert";
 import Manager_View from "./components/manager/view";
 import Manager_Edit from "./components/manager/edit";
 import Manager_Comment from "./components/manager/comment";
 import Manager_Comment_Insert from "./components/manager/insert_comment";
+import Developer_Comment from "./components/developer/comment";
+import Developer_Comment_Insert from "./components/developer/insert_comments";
 import axios from "axios";
 import { Route, Routes, BrowserRouter as Router } from "react-router-dom";
 
@@ -36,6 +39,9 @@ function App() {
         <Route path="/manager_edit" element={<Manager_Edit />} />
         <Route path="/manager_comment" element={<Manager_Comment />} />
         <Route path="/manager_comment_insert" element={<Manager_Comment_Insert />} />
+        <Route path="/developer_view" element={<Developer_View />} />
+        <Route path="/developer_comment" element={<Developer_Comment />} />
+        <Route path="/developer_comment_insert" element={<Developer_Comment_Insert />} />
       </Routes>
     </Router>
   );

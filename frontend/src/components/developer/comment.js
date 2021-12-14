@@ -110,7 +110,7 @@ function OutlinedCard() {
               
                   <Button
                     onClick={() => {
-                    navigate("/insert_comments");
+                    navigate("/developer_comment_insert");
                     }}
                     size="small"
                     variant="outlined"
