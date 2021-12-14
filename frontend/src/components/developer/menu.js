@@ -45,7 +45,7 @@ function OutlinedCard() {
         "action":"get",
         "user_name":"developer1"
     }
-    axios.post('https://team106.pythonanywhere.com/tickets_api', formData)
+    axios.get('https://team106.pythonanywhere.com/tickets_api')
     .then(function (response) {
       console.log(response.data)
       setHospital(response.data)
@@ -83,7 +83,8 @@ function OutlinedCard() {
             <Button
               onClick={() => {
                 console.log(hospital);
-                navigate("/");
+                localStorage.setItem("ticket_id", hospital.ticket_id)
+                navigate("/developer_view");
               }}
               size="small"
             >
@@ -97,6 +98,25 @@ function OutlinedCard() {
   return (
     <div>
       <div>
+        <left>
+        <Typography variant="h5" component="h2">
+                Hello,
+              </Typography>
+        </left>
+        <right>
+        <Typography variant="body2" component="p">
+              <Button
+
+              onClick={() => {
+                navigate("/logout");
+              }}
+              size="small"
+              variant="outlined"
+            >
+             Logout
+            </Button>
+              </Typography>
+        </right>
         <center>
           <Card className={cards.root} variant="outlined">
             <CardContent>
@@ -107,6 +127,9 @@ function OutlinedCard() {
               ></Typography>
               <Typography variant="h5" component="h2">
                 Ticket Management System
+              </Typography>
+              <Typography variant="h5" component="h2">
+                Developer:
               </Typography>
               <Typography variant="body2" component="p">
               <Button

@@ -42,13 +42,11 @@ function OutlinedCard() {
   useEffect(() => getHospital(), []);
   const getHospital = () => {
 
-    let formData = {
-        "action":"get"
-    }
-    axios.post('https://team106.pythonanywhere.com/tickets_api', formData)
+    axios.get('https://team106.pythonanywhere.com/tickets_api')
     .then(function (response) {
       console.log(response.data)
       setHospital(response.data)
+      setLoading(true);
     })
     .catch(function (error) {
         console.log(error);
@@ -98,9 +96,7 @@ function OutlinedCard() {
     );
   }
 
-
   function renderItems(){
-  
     return (
       <div>
         <div>
