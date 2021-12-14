@@ -88,7 +88,7 @@ function OutlinedCard() {
                 console.log(nurse.type)
                 localStorage.setItem("room_number", nurse.room_number);
                 localStorage.setItem("r_id", nurse.r_id);
-                navigate("/room_menu");
+                navigate("/manager_edit");
               }}
               size="small"
             >
@@ -114,11 +114,11 @@ function OutlinedCard() {
                 Ticket Management System
               </Typography>
               <Typography variant="body1" component="h2">
-                {localStorage.getItem('location')}
+              {localStorage.getItem('team')}
               </Typography>
               <Button
                 onClick={() => {
-                  navigate("/insert_nurse_room");
+                  navigate("/");
                 }}
                 size="small"
                 variant="outlined"

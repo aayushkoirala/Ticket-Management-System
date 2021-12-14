@@ -17,17 +17,35 @@ const cardStyles = makeStyles({
 
 function MaterialUIFormSubmit(props) {
   const navigate = useNavigate();
+  const [nurse, setNurse] = useState([]);
   const [values, setValues] = React.useState([]);
   const [selected, setSelected] = useState(" ");
+  const [loading, setLoading] = useState(false);
 
+  useEffect(() => getNurse(), []);
   useEffect(() => getDoctor(), []);
+
+  const getNurse = () => {
+    axios
+      .post("https://team106.pythonanywhere.com/tickets_api", {
+        action: "get_ticket_info",
+        ticket_id: localStorage.getItem("ticket_id"),
+      })
+      .then(function (response) {
+        console.log(response.data);
+        setNurse(response.data);
+        setLoading(true);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
   const cards = cardStyles();
 
   function handleChange(event) {
     setSelected(event.target.value);
   }
-
 
   const getDoctor = () => {
     axios
@@ -94,7 +112,7 @@ function MaterialUIFormSubmit(props) {
 
   const classes = useStyles();
 
-  return (
+  function renderItems(){
     <div>
       <div>
         <center>
@@ -186,7 +204,9 @@ function MaterialUIFormSubmit(props) {
         </center>
       </Paper>
     </div>
-  );
+  }
+
+  return loading ? <div>{renderItems()}</div> : <div>loading...</div>;
 }
 
 export default MaterialUIFormSubmit;

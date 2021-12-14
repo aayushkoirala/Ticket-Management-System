@@ -37,13 +37,13 @@ const cardStyles = makeStyles({
 function OutlinedCard() {
   const navigate = useNavigate();
   const [hospital, setHospital] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => getHospital(), []);
   const getHospital = () => {
 
     let formData = {
-        "action":"get",
-        "user_name":"manager1"
+        "action":"get"
     }
     axios.post('https://team106.pythonanywhere.com/tickets_api', formData)
     .then(function (response) {
@@ -52,7 +52,6 @@ function OutlinedCard() {
     })
     .catch(function (error) {
         console.log(error);
-        alert("Login Failed, Try Again")
     });
     
   };
@@ -98,49 +97,58 @@ function OutlinedCard() {
       </Grid>
     );
   }
-  return (
-    <div>
+
+
+  function renderItems(){
+  
+    return (
       <div>
-        <center>
-          <Card className={cards.root} variant="outlined">
-            <CardContent>
-              <Typography
-                className="Hospital"
-                color="textSecondary"
-                gutterBottom
-              ></Typography>
-              <Typography variant="h5" component="h2">
-                Ticket Management System
-              </Typography>
-              <Typography variant="body1" component="h2">
-                {localStorage.getItem('location')}
-              </Typography>
-              <Typography variant="body2" component="p">
-              <Button
-              onClick={() => {
-                navigate("/manager_insert");
-              }}
-              size="small"
-              variant="outlined"
-            >
-             Insert Ticket
-            </Button>
-              </Typography>
-            </CardContent>
-          </Card>
-        </center>
-        &nbsp;
+        <div>
+          <center>
+            <Card className={cards.root} variant="outlined">
+              <CardContent>
+                <Typography
+                  className="Hospital"
+                  color="textSecondary"
+                  gutterBottom
+                ></Typography>
+                <Typography variant="h5" component="h2">
+                  Ticket Management System
+                </Typography>
+                <Typography variant="body1" component="h2">
+                  {localStorage.getItem('team')}
+                </Typography>
+                <Typography variant="body2" component="p">
+                <Button
+                onClick={() => {
+                  navigate("/manager_insert");
+                }}
+                size="small"
+                variant="outlined"
+              >
+               Insert Ticket
+              </Button>
+                </Typography>
+              </CardContent>
+            </Card>
+          </center>
+          &nbsp;
+        </div>
+        <Grid
+          container
+          spacing={4}
+          className={cards.gridContainer}
+          justifyContent="center"
+        >
+          {hospital.map(mapCards)}
+        </Grid>
       </div>
-      <Grid
-        container
-        spacing={4}
-        className={cards.gridContainer}
-        justifyContent="center"
-      >
-        {hospital.map(mapCards)}
-      </Grid>
-    </div>
-  );
+    );
+
+  }
+  
+  return loading ? <div>{renderItems()}</div> : <div>loading...</div>;
 }
 
 export default OutlinedCard;
+

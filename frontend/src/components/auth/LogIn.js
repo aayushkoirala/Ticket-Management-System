@@ -38,24 +38,22 @@ export default function SignIn() {
         console.log(formData);
         axios.post('https://team106.pythonanywhere.com/login', formData)
             .then(function (response) {
-                let rank = response.data;
-
+                let data = response.data
+                let rank = data.rank
+                console.log(rank)
+                localStorage.setItem("token", data.access_token)
+                localStorage.setItem("team", data.team)
                 if (rank == "developer") {
-                    console.log("sucess")
                     navigate('/developer_menu')
                 }
                 else if (rank == "manager") {
-                    console.log("2")
-                }
-                else if (rank == "admin") {
-                    console.log("3")
+                    navigate('/manager_menu')
                 }
             })
             .catch(function (error) {
                 console.log(error);
                 alert("Login Failed, Try Again")
             });
-            //alert("Login Failed, Try Again")
     };
 
     return (
