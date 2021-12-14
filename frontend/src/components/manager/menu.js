@@ -43,15 +43,15 @@ function OutlinedCard() {
   const getHospital = () => {
 
     axios.get('https://team106.pythonanywhere.com/tickets_api')
-    .then(function (response) {
-      console.log(response.data)
-      setHospital(response.data)
-      setLoading(true);
-    })
-    .catch(function (error) {
+      .then(function (response) {
+        console.log(response.data)
+        setHospital(response.data)
+        setLoading(true);
+      })
+      .catch(function (error) {
         console.log(error);
-    });
-    
+      });
+
   };
   const classes = useStyles();
   const cards = cardStyles();
@@ -76,7 +76,7 @@ function OutlinedCard() {
               <b>Status:</b> {hospital.status}
             </Typography>
             <Typography variant="body2" component="p">
-            <b>Due:</b> {hospital.due_date}
+              <b>Due:</b> {hospital.due_date}
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
@@ -96,7 +96,7 @@ function OutlinedCard() {
     );
   }
 
-  function renderItems(){
+  function renderItems() {
     return (
       <div>
         <div>
@@ -111,19 +111,34 @@ function OutlinedCard() {
                 <Typography variant="h5" component="h2">
                   Ticket Management System
                 </Typography>
-                <Typography variant="body1" component="h2">
+                <Typography variant="body1" component="h2" justifyContent="">
                   {localStorage.getItem('team')}
                 </Typography>
                 <Typography variant="body2" component="p">
-                <Button
-                onClick={() => {
-                  navigate("/manager_insert");
-                }}
-                size="small"
-                variant="outlined"
-              >
-               Insert Ticket
-              </Button>
+                  <Button
+                    onClick={() => {
+                      navigate("/manager_insert");
+                    }}
+                    size="small"
+                    variant="outlined"
+                  >
+                    Insert Ticket
+                  </Button>
+                  <Button
+                    style={{ backgroundColor: "red", color: "#FFFFFF" }}
+                    onClick={() => {
+                      localStorage.setItem("token", " ")
+                      navigate("/login")
+                    }}
+                    size="small"
+                    variant="outlined"
+                    className={classes.button}
+                  >
+                    Logout
+                  </Button>
+                  <Typography variant="body1" component="h2" justifyContent="">
+                    Hello, <b>{localStorage.getItem('name')}</b>
+                  </Typography>
                 </Typography>
               </CardContent>
             </Card>
@@ -142,7 +157,7 @@ function OutlinedCard() {
     );
 
   }
-  
+
   return loading ? <div>{renderItems()}</div> : <div>loading...</div>;
 }
 

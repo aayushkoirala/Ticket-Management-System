@@ -43,6 +43,7 @@ export default function SignIn() {
                 console.log(rank)
                 localStorage.setItem("token", data.access_token)
                 localStorage.setItem("team", data.team)
+                localStorage.setItem("name", data.name)
                 if (rank == "developer") {
                     navigate('/developer_menu')
                 }
