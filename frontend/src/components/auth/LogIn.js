@@ -11,6 +11,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 
 function Copyright(props) {
     return (
@@ -24,14 +25,38 @@ const theme = createTheme();
 
 export default function SignIn() {
     const navigate = useNavigate();
+
+
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        // eslint-disable-next-line no-console
-        console.log({
-            email: data.get('email'),
+
+        let formData = {
+            username: data.get('username'),
             password: data.get('password'),
-        });
+        }
+
+        console.log(formData);
+        axios.post('https://team106.pythonanywhere.com/login', formData)
+            .then(function (response) {
+                let rank = response.data;
+
+                if (rank == "developer") {
+                    console.log("1")
+                }
+                else if (rank == "manager") {
+                    console.log("2")
+                }
+                else if (rank == "admin") {
+                    console.log("3")
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+                alert("Login Failed, Try Again")
+            });
+            //alert("Login Failed, Try Again")
     };
 
     return (
@@ -57,10 +82,10 @@ export default function SignIn() {
                             margin="normal"
                             required
                             fullWidth
-                            id="email"
-                            label="Email Address"
-                            name="email"
-                            autoComplete="email"
+                            id="username"
+                            label="User Name"
+                            name="username"
+                            autoComplete="username"
                             autoFocus
                         />
                         <TextField
