@@ -322,41 +322,45 @@ class CreateUser(Resource):
 class LoginAPI(Resource):
     def post(self):
         #session.pop('user_id', None)
-        try:
-            data = json.loads(request.data)
-            username = data['username']
-            password = data['password']
-            query_user = UsersLogIn.query.filter_by(username=username).first()
+        # try:
+        data = json.loads(request.data)
+        username = data['username']
+        password = data['password']
+        query_user = UsersLogIn.query.filter_by(username=username).first()
 
-            if query_user is not None:
-                hashed_salted = query_user.password
-                pattern = re.compile(r'[$]\w+[$]')
-                matches = pattern.finditer(hashed_salted)
-                for match in matches:
-                    salt = match[0][1:-1]
-                concat_pass_salt = password+salt
-                result = hashlib.md5(concat_pass_salt.encode())
-                pattern2 = re.compile(r'[$]\w+')
-                matches2 = pattern2.finditer(hashed_salted)
-                for matchs in matches2:
-                    right_part = matchs[0][1:]
-                if(result.hexdigest() == right_part):
-                    # update the redirect url to t.html?
-                    session['user_id'] = query_user.id
-                    #app.permanent_session_lifetime = timedelta(minutes=480)
-                    user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
-                    access_token = create_access_token(identity = data['username'])
-
-                    return {
-                        'rank': user_info.rank,
-                        'access_token': access_token
-                        }
-                    #return  user_info.rank
+        if query_user is not None:
+            hashed_salted = query_user.password
+            pattern = re.compile(r'[$]\w+[$]')
+            matches = pattern.finditer(hashed_salted)
+            for match in matches:
+                salt = match[0][1:-1]
+            concat_pass_salt = password+salt
+            result = hashlib.md5(concat_pass_salt.encode())
+            pattern2 = re.compile(r'[$]\w+')
+            matches2 = pattern2.finditer(hashed_salted)
+            for matchs in matches2:
+                right_part = matchs[0][1:]
+            if(result.hexdigest() == right_part):
+                # update the redirect url to t.html?
+                
+                #app.permanent_session_lifetime = timedelta(minutes=480)
+                user_info = UserInfo.query.filter_by(user_id=query_user.id).first()
+                access_token = create_access_token(identity = data['username'])
+                if query_user.id == 9:
+                    team = 'admin'
                 else:
-                    return 'failure'
-            return 'failure'
-        except:
-            return 'failure'
+                    team = Teams.query.filter_by(id=user_info.rank).first().team_name
+                
+                return {
+                    'rank': team,
+                    'access_token': access_token
+                    }
+                #return  user_info.rank
+            else:
+                return 'failure'
+        return 'failure'
+        # except:
+        #     return 'failure'
 
     def delete(self):
         #session.pop('user_id', None)
@@ -430,8 +434,9 @@ class userAPI(Resource):
             user_info = UserInfo.query.filter_by(team_id=int(team_id)).all()
             output = []
             for user in user_info:
-                tickets = TicketTracker.query.filter_by(assigned_user_id=user.id).first()
-                if tickets is None:
+                # tickets = TicketTracker.query.filter_by(assigned_user_id=user.id).first()
+                # if tickets is None:
+                if user.rank is not 'manager':
                     output.append({"id":user.id, "name":user.name})
             return output
 
