@@ -85,16 +85,14 @@ function MaterialUIFormSubmit(props) {
   const [formInput, setFormInput] = useReducer(
     (state, newState) => ({ ...state, ...newState }),
     {
-      "assigned_to_id": " ",
+      team_name: "",
     }
   );
-
   const handleSubmit = (evt) => {
     evt.preventDefault();
-    formInput["action"] = "create_ticket"
+    formInput["action"] = "edit_ticket"
     formInput["team_name"] = localStorage.getItem("team")
-    formInput["assigned_to_id"] = toString(selected.id);
-
+    formInput["assigned_id_to"] = selected.id
     let data = { formInput };
 
     console.log(data)
@@ -102,7 +100,6 @@ function MaterialUIFormSubmit(props) {
     axios.post('https://team106.pythonanywhere.com/tickets_api', data)
       .then(function (response) {
         console.log(response.data);
-        navigate('/manager_menu')
       })
       .catch(function (error) {
         console.log(error);
@@ -143,7 +140,7 @@ function MaterialUIFormSubmit(props) {
           </center>
           &nbsp;
         </div>
-        <Paper className={classes.root} justifyontent="center">
+        <Paper className={classes.root} justifycontent="center">
           <center>
             <Typography variant="h5" component="h3">
               {props.formName}
