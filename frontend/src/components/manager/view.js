@@ -36,10 +36,13 @@ const cardStyles = makeStyles({
 
 function OutlinedCard() {
   const navigate = useNavigate();
-  const [nurse, setNurse] = useState([]);
+  const [ticket, setTicket] = useState([]);
 
-  useEffect(() => getNurse(), []);
-  const getNurse = () => {
+  useEffect(() => getTicket(), []);
+  const getTicket = () => {
+    if(localStorage.getItem("token") === " "){
+      navigate("/")
+    }
     axios
       .post("https://team106.pythonanywhere.com/tickets_api", {
         action: "get_ticket_info",
@@ -47,7 +50,7 @@ function OutlinedCard() {
       })
       .then(function (response) {
         console.log(response.data);
-        setNurse(response.data);
+        setTicket(response.data);
       })
       .catch(function (error) {
         console.log(error);
@@ -56,7 +59,7 @@ function OutlinedCard() {
   const classes = useStyles();
   const cards = cardStyles();
 
-  function mapCards(nurse, index) {
+  function mapCards(ticket, index) {
     return (
       <Grid item xs={12} sm={6} md={4} key={index}>
         <Card className={classes.root} variant="outlined">
@@ -67,27 +70,27 @@ function OutlinedCard() {
               gutterBottom
             ></Typography>
             <Typography variant="h5" component="h2">
-              {nurse.description}
+              {ticket.description}
             </Typography>
             <Typography variant="body2">
-            <b>Status:</b> {nurse.status}
+            <b>Status:</b> {ticket.status}
             </Typography>
             <Typography variant="body2">
-              <b>Created Date:</b> {nurse.created_date}
+              <b>Created Date:</b> {ticket.created_date}
             </Typography>
             <Typography variant="body2">
-              <b>Due Date:</b> {nurse.created_date}
+              <b>Due Date:</b> {ticket.created_date}
             </Typography>
             <Typography variant="body2">
-              <b>Assigned to:</b> {nurse.assined_to}
+              <b>Assigned to:</b> {ticket.assined_to}
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
             <Button
               onClick={() => {
-                console.log(nurse.type)
-                localStorage.setItem("room_number", nurse.room_number);
-                localStorage.setItem("r_id", nurse.r_id);
+                console.log(ticket.type)
+                localStorage.setItem("room_number", ticket.room_number);
+                localStorage.setItem("r_id", ticket.r_id);
                 navigate("/manager_edit");
               }}
               size="small"
@@ -118,7 +121,7 @@ function OutlinedCard() {
               </Typography>
               <Button
                 onClick={() => {
-                  navigate("/");
+                  navigate("/manager_menu");
                 }}
                 size="small"
                 variant="outlined"
@@ -136,7 +139,7 @@ function OutlinedCard() {
         className={cards.gridContainer}
         justifyContent="center"
       >
-        {nurse.map(mapCards)}
+        {ticket.map(mapCards)}
       </Grid>
     </div>
   );

@@ -36,16 +36,18 @@ const cardStyles = makeStyles({
 
 function OutlinedCard() {
   const navigate = useNavigate();
-  const [hospital, setHospital] = useState([]);
+  const [ticket, setTicket] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => getHospital(), []);
-  const getHospital = () => {
-
+  useEffect(() => getTicket(), []);
+  const getTicket = () => {
+    if(localStorage.getItem("token") === " "){
+      navigate("/")
+    }
     axios.get('https://team106.pythonanywhere.com/tickets_api')
       .then(function (response) {
         console.log(response.data)
-        setHospital(response.data)
+        setTicket(response.data)
         setLoading(true);
       })
       .catch(function (error) {
@@ -56,7 +58,7 @@ function OutlinedCard() {
   const classes = useStyles();
   const cards = cardStyles();
 
-  function mapCards(hospital, index) {
+  function mapCards(ticket, index) {
     return (
       <Grid item xs={12} sm={6} md={4} key={index}>
         <Card className={classes.root} variant="outlined">
@@ -67,23 +69,23 @@ function OutlinedCard() {
               gutterBottom
             ></Typography>
             <Typography variant="h5" component="h2">
-              {hospital.ticket_id}
+              {ticket.ticket_id}
             </Typography>
             <Typography variant="h5" component="h2">
-              {hospital.summary}
+              {ticket.summary}
             </Typography>
             <Typography variant="body2" component="p">
-              <b>Status:</b> {hospital.status}
+              <b>Status:</b> {ticket.status}
             </Typography>
             <Typography variant="body2" component="p">
-              <b>Due:</b> {hospital.due_date}
+              <b>Due:</b> {ticket.due_date}
             </Typography>
           </CardContent>
           <CardActions style={{ justifyContent: "center" }}>
             <Button
               onClick={() => {
-                console.log(hospital);
-                localStorage.setItem("ticket_id", hospital.ticket_id)
+                console.log(ticket);
+                localStorage.setItem("ticket_id", ticket.ticket_id)
                 navigate("/manager_view");
               }}
               size="small"
@@ -104,7 +106,7 @@ function OutlinedCard() {
             <Card className={cards.root} variant="outlined">
               <CardContent>
                 <Typography
-                  className="Hospital"
+                  className="Ticket"
                   color="textSecondary"
                   gutterBottom
                 ></Typography>
@@ -128,7 +130,7 @@ function OutlinedCard() {
                     style={{ backgroundColor: "red", color: "#FFFFFF" }}
                     onClick={() => {
                       localStorage.setItem("token", " ")
-                      navigate("/login")
+                      navigate("/")
                     }}
                     size="small"
                     variant="outlined"
@@ -151,7 +153,7 @@ function OutlinedCard() {
           className={cards.gridContainer}
           justifyContent="center"
         >
-          {hospital.map(mapCards)}
+          {ticket.map(mapCards)}
         </Grid>
       </div>
     );

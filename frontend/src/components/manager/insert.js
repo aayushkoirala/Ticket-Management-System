@@ -20,7 +20,7 @@ function MaterialUIFormSubmit(props) {
   const [values, setValues] = React.useState([]);
   const [selected, setSelected] = useState(" ");
 
-  useEffect(() => getDoctor(), []);
+  useEffect(() => getDev(), []);
 
   const cards = cardStyles();
 
@@ -29,11 +29,13 @@ function MaterialUIFormSubmit(props) {
   }
 
 
-  const getDoctor = () => {
+  const getDev = () => {
+    if(localStorage.getItem("token") === " "){
+      navigate("/")
+    }
     axios
-      .post("http://127.0.0.1:5000/getDoctors", {
-        queryType: "hospital",
-        hospital_name: localStorage.getItem("hospital_name"),
+      .post("https://team106.pythonanywhere.com/users", {
+        team_name: localStorage.getItem("team")
       })
       .then(function (response) {
         console.log(response.data);
@@ -74,13 +76,16 @@ function MaterialUIFormSubmit(props) {
     evt.preventDefault();
     formInput["action"] = "create_ticket"
     formInput["team_name"] = localStorage.getItem("team")
+    formInput["assigned_to_id"] = toString(selected.id);
+
     let data = { formInput };
 
     console.log(data)
-    axios.post('', data)
+
+    axios.post('https://team106.pythonanywhere.com/tickets_api', data)
     .then(function (response) {
       console.log(response.data);
-      navigate('/patient')
+      navigate('/manager_menu')
     })
     .catch(function (error) {
       console.log(error);
@@ -104,7 +109,7 @@ function MaterialUIFormSubmit(props) {
           <Card className={cards.root} variant="outlined">
             <CardContent>
               <Typography
-                className="Hospital"
+                className="Ticket"
                 color="textSecondary"
                 gutterBottom
               ></Typography>
