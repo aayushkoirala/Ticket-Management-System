@@ -83,20 +83,11 @@ function OutlinedCard() {
             <Button
               onClick={() => {
                 console.log(hospital);
-                navigate("/login");
+                navigate("/");
               }}
               size="small"
             >
               Select Ticket
-            </Button>
-            <Button
-              onClick={() => {
-                console.log(hospital.name);
-                navigate("/login");
-              }}
-              size="small"
-            >
-              Edit Ticket
             </Button>
           </CardActions>
         </Card>

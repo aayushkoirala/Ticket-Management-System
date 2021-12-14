@@ -5,6 +5,8 @@ import CardActions from "@material-ui/core/CardActions";
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import { Grid } from "@material-ui/core";
 import { useNavigate } from "react-router-dom";
 
@@ -25,121 +27,113 @@ const useStyles = makeStyles({
   },
 });
 
+const cardStyles = makeStyles({
+  gridContainer: {
+    paddingLeft: "20px",
+    paddingRight: "20px",
+  },
+});
+
 function OutlinedCard() {
   const navigate = useNavigate();
-  const classes = useStyles();
+  const [hospital, setHospital] = useState([]);
 
-  return (
-    <div>
-      <center>
+  useEffect(() => getHospital(), []);
+  const getHospital = () => {
+
+    let formData = {
+        "action":"get",
+        "user_name":"developer1"
+    }
+    axios.post('https://team106.pythonanywhere.com/tickets_api', formData)
+    .then(function (response) {
+      console.log(response.data)
+      setHospital(response.data)
+    })
+    .catch(function (error) {
+        console.log(error);
+        alert("Login Failed, Try Again")
+    });
+    
+  };
+  const classes = useStyles();
+  const cards = cardStyles();
+
+  function mapCards(hospital, index) {
+    return (
+      <Grid item xs={12} sm={6} md={4} key={index}>
         <Card className={classes.root} variant="outlined">
-          <CardContent>
+          <CardContent style={{ textAlign: "center" }}>
             <Typography
-              className="Hospital"
+              className={classes.title}
               color="textSecondary"
               gutterBottom
             ></Typography>
             <Typography variant="h5" component="h2">
-              Ticket management system
+              {hospital.ticket_id}
             </Typography>
-            <Typography variant="h9" component="h9">
-              Admin
+            <Typography variant="h5" component="h2">
+              {hospital.due_date}
             </Typography>
-            <CardActions style={{ justifyContent: "center" }}>
-            </CardActions>
-
+            <Typography variant="body2" component="p">
+              {hospital.status}
+            </Typography>
           </CardContent>
+          <CardActions style={{ justifyContent: "center" }}>
+            <Button
+              onClick={() => {
+                console.log(hospital);
+                navigate("/login");
+              }}
+              size="small"
+            >
+              Select Ticket
+            </Button>
+          </CardActions>
         </Card>
-      </center>
-      &nbsp;
+      </Grid>
+    );
+  }
+  return (
+    <div>
+      <div>
+        <center>
+          <Card className={cards.root} variant="outlined">
+            <CardContent>
+              <Typography
+                className="Hospital"
+                color="textSecondary"
+                gutterBottom
+              ></Typography>
+              <Typography variant="h5" component="h2">
+                Ticket Management System
+              </Typography>
+              <Typography variant="body1" component="h2">
+                {localStorage.getItem('location')}
+              </Typography>
+              <Typography variant="body2" component="p">
+              <Button
+              onClick={() => {
+                navigate("/admin_insert");
+              }}
+              size="small"
+              variant="outlined"
+            >
+             Insert Ticket
+            </Button>
+              </Typography>
+            </CardContent>
+          </Card>
+        </center>
+        &nbsp;
+      </div>
       <Grid
         container
         spacing={4}
-        className={classes.gridContainer}
+        className={cards.gridContainer}
         justifyContent="center"
       >
-        <Grid item xs={12} sm={6} md={4}>
-          <Card className={classes.root} variant="outlined">
-            <CardContent>
-              <Typography
-                className={classes.title}
-                color="textSecondary"
-                gutterBottom
-              ></Typography>
-              <Typography variant="h5" component="h2" style={{textAlign: "center" }}>
-                Frontend
-              </Typography>
-            </CardContent>
-
-            <CardActions style={{ justifyContent: "center" }}>
-              <Button
-                onClick={() => {
-                  console.log(1);
-                  navigate("/doctor");
-                }}
-                size="small"
-              >
-                Select Front End
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={4}>
-          <Card className={classes.root} variant="outlined">
-            <CardContent>
-              <Typography
-                className={classes.title}
-                color="textSecondary"
-                gutterBottom
-              ></Typography>
-              <Typography variant="h5" component="h2">
-                <center>Backend</center>
-              </Typography>
-            </CardContent>
-            <CardActions style={{ justifyContent: "center" }}>
-              <Button
-                onClick={() => {
-                  console.log(1);
-                  navigate("/patient");
-                }}
-                size="small"
-              >
-                Select Backend
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid>
-
-  
-
-
-
-        <Grid item xs={12} sm={6} md={4}>
-          <Card className={classes.root} variant="outlined">
-            <CardContent>
-              <Typography
-                className={classes.title}
-                color="textSecondary"
-                gutterBottom
-              ></Typography>
-              <Typography variant="h5" component="h2">
-                <center>UI/UX</center>
-              </Typography>
-            </CardContent>
-            <CardActions style={{ justifyContent: "center" }}>
-              <Button
-                onClick={() => {
-                  navigate("/maintenance");
-                  console.log(1);
-                }}
-                size="small"
-              >
-                Select UI/UX
-              </Button>
-            </CardActions>
-          </Card>
-        </Grid>
+        {hospital.map(mapCards)}
       </Grid>
     </div>
   );
