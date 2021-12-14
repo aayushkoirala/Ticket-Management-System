@@ -76,7 +76,7 @@ function MaterialUIFormSubmit(props) {
     evt.preventDefault();
     formInput["action"] = "create_ticket"
     formInput["team_name"] = localStorage.getItem("team")
-    formInput["assigned_to_id"] = toString(selected.id);
+    formInput["assigned_to_id"] = selected.id
 
     let data = { formInput };
 
