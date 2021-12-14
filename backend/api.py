@@ -6,6 +6,11 @@ from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from distutils.log import debug, error
 from flask_cors import CORS
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_refresh_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
 from datetime import timedelta
 import json
 import datetime
@@ -15,13 +20,15 @@ import random
 
 app = Flask(__name__)
 
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://team106:S-1408429@team106.mysql.pythonanywhere-services.com/team106$ticket_tracking_system'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://team106:S-1408429@team106.mysql.pythonanywhere-services.com/team106$ticket_tracking_system'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 db = SQLAlchemy(app)
 api = Api(app)
 admin = Admin(app)
 app.secret_key = 'TEAM106'
-CORS(app, supports_credentials=True)
+app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
+jwt = JWTManager(app)
+CORS(app)
 class UsersLogIn(db.Model):
     __tablename__ = 'users_login'
     id = db.Column(db.Integer, primary_key=True)
@@ -94,7 +101,11 @@ admin.add_view(ModelView(TicketTracker, db.session))
 admin.add_view(ModelView(Comments, db.session))
 admin.add_view(ModelView(Messages, db.session))
 db.create_all()
+
+
+
 class TeamAPI(Resource):
+    @jwt_required
     def get(self):
         #needs to be open because when creating a new user
         teams = Teams.query.all()
@@ -134,12 +145,14 @@ class TicketsAPI(Resource):
         # if 'user_id' not in session:
         #     return
         action = json.loads(request.data)['action']
-        
+        print(action)
         if action == 'get_ticket_info':
             ticket_id = json.loads(request.data)['ticket_id']
             ticket_info = TicketTracker.query.filter_by(id=ticket_id).first()
             user_info = UserInfo.query.filter_by(id=ticket_info.assigned_user_id).first()
             team = Teams.query.filter_by(id=ticket_info.assigned_department_id).first()
+
+            json_data = json.loads("{}")
             ticket_info_out = []
             ticket_info_out.append({
                                             'ticket_id':ticket_info.id,
@@ -151,7 +164,7 @@ class TicketsAPI(Resource):
                                             'description':ticket_info.description
                                         })
             return ticket_info_out
-        
+
         elif action == 'get_comments_given_ticket':
             ticket_id = json.loads(request.data)['ticket_id']
             ticket_info = TicketTracker.query.filter_by(id=ticket_id).first()
@@ -170,42 +183,64 @@ class TicketsAPI(Resource):
             return 'success'
         elif action == 'create_ticket':
             data = json.loads(request.data)
+
             user_name = json.loads(request.data)['user_name']
             user_cred = UsersLogIn.query.filter_by(username=user_name).first()
-            user_info = UserInfo.query.filter_by(user_id=user_cred.id).first()
-            
-            user_id = user_info.id
-            due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
+            if user_cred is not None:
+                user_info = UserInfo.query.filter_by(user_id=user_cred.id).first()
+    
+                user_id = user_info.id
+                due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
+    
+                status = data['status']
+                description = data['description']
+                created_date = datetime.datetime.now()
+                user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
+                team_id = user_info.team_id
+                new_ticket = TicketTracker(assigned_user_id=user_id,
+                                            due_date=due_date,
+                                            created_date=created_date,
+                                            status=status,
+                                            description=description,
+                                            assigned_department_id=team_id)
+                db.session.add(new_ticket)
+                db.session.commit()
+                return 'success'
+            else:
+                due_date =datetime.datetime.strptime(data['due_date'], '%Y-%m-%d')
 
-            status = data['status']
-            description = data['description']
-            created_date = datetime.datetime.now()
-            user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
-            team_id = user_info.team_id
-            new_ticket = TicketTracker(assigned_user_id=user_id,
-                                        due_date=due_date,
-                                        created_date=created_date,
-                                        status=status,
-                                        description=description,
-                                        assigned_department_id=team_id)
-            db.session.add(new_ticket)
-            db.session.commit()
-            return 'success'
+                status = data['status']
+                description = data['description']
+                created_date = datetime.datetime.now()
+
+                team_id = int(data['team_id'])
+                new_ticket = TicketTracker(
+                                            due_date=due_date,
+                                            created_date=created_date,
+                                            status=status,
+                                            description=description,
+                                            assigned_department_id=team_id)
+                db.session.add(new_ticket)
+                db.session.commit()
+                return 'success'
+
         elif action == 'get':
             user_name = json.loads(request.data)['user_name']
             user_cred = UsersLogIn.query.filter_by(username=user_name).first()
             user_info = UserInfo.query.filter_by(user_id=user_cred.id).first()
             if user_info.rank == 'manager':
                 tickets = TicketTracker.query.filter_by(assigned_department_id=user_info.team_id).all()
-               
+
                 output = []
                 for i,ticket in enumerate(tickets):
                     user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
                     output.append({'ticket_id':ticket.id,
-                                        'assignee': user_info.name,
+                                        'assined_to': user_info.name,
                                         'due_date':str(ticket.due_date),
-                                        'status':ticket.status})
-            
+                                        'created_date':str(ticket.created_date),
+                                        'status':ticket.status,
+                                        'summary':ticket.description})
+
                 return output
             elif user_info.rank == 'developer':
                 tickets = TicketTracker.query.filter_by(assigned_user_id=user_info.id).all()
@@ -215,7 +250,9 @@ class TicketsAPI(Resource):
                     user_info = UserInfo.query.filter_by(id=ticket.assigned_user_id).first()
                     output.append({'ticket_id':ticket.id,
                                         'due_date':str(ticket.due_date),
-                                        'status':ticket.status})
+                                        'created_date':str(ticket.created_date),
+                                        'status':ticket.status,
+                                        'summary':ticket.description})
                 return output
 
     def put(self):
@@ -237,7 +274,15 @@ class TicketsAPI(Resource):
             ticket_info.status = new_status
             db.session.commit()
             return 'success'
+        elif action == 'edit_ticket_assigned_to':
+            data = json.loads(request.data)
+            new_user_id = data['assigned_to_id']
+            ticket_info = TicketTracker.query.filter_by(id=data['ticket_id']).first()
+            ticket_info.assigned_user_id = int(new_user_id)
+            db.session.commit()
+            return 'success'
         return 'failure'
+
 
 def hashing(password):
     ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -259,7 +304,7 @@ class CreateUser(Resource):
         password = hashing(data['password'])
         team_id = data['team_id']
         name = data['name']
-        rank = 'developer' 
+        rank = 'developer' #developer or manager
         new_user_login = UsersLogIn(username=username, password=password)
         db.session.add(new_user_login)
         db.session.commit()
@@ -267,6 +312,16 @@ class CreateUser(Resource):
         new_user_info = UserInfo(name=name, rank=rank, team_id=int(team_id), user_id=new_user_login.id)
         db.session.add(new_user_info)
         db.session.commit()
+        try:
+            access_token = create_access_token(identity = data['username'])
+            refresh_token = create_refresh_token(identity = data['username'])
+            return {
+                'message': 'User {} was created'.format(data['username']),
+                'access_token': access_token,
+                'refresh_token': refresh_token
+                }
+        except:
+            return {'message': 'Something went wrong'}, 500
 
 
 class LoginAPI(Resource):
@@ -294,8 +349,15 @@ class LoginAPI(Resource):
                     # update the redirect url to t.html?
                     session['user_id'] = query_user.id
                     #app.permanent_session_lifetime = timedelta(minutes=480)
-                    user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
-                    return  user_info.rank
+                    #user_info = UserInfo.query.filter_by(user_id=session['user_id']).first()
+                    access_token = create_access_token(identity = data['username'])
+                    refresh_token = create_refresh_token(identity = data['username'])
+                    return {
+                        'message': 'Logged in as {}'.format(username),
+                        'access_token': access_token,
+                        'refresh_token': refresh_token
+                        }
+                    #return  user_info.rank
                 else:
                     return 'failure'
             return 'failure'
@@ -313,63 +375,79 @@ class MessagesAPI(Resource):
         for user in users:
             output.append(user.name)
         return output
+
     def post(self): #get msgs (current logged in user + from id), post msgs
         # if 'user_id' not in session:
         #     return
-        
+
         action = json.loads(request.data)['action']
         if action == 'get':
-            
+
             from_user_name = json.loads(request.data)['from_user_name']
             to_user_name = json.loads(request.data)['to_user_name']
-            
+
             user_cred_from = UsersLogIn.query.filter_by(username=from_user_name).first()
             user_cred_to = UsersLogIn.query.filter_by(username=to_user_name).first()
-            
+
             user_info_from = UserInfo.query.filter_by(user_id=user_cred_from.id).first()
             user_info_to = UserInfo.query.filter_by(user_id=user_cred_to.id).first()
-            
+
             from_user = UserInfo.query.filter_by(id=user_info_from.id).first()
             to_user=  UserInfo.query.filter_by(id=user_info_to.id).first()
-            
+
             all_messages = Messages.query.filter_by(from_user=user_info_from.id, to_user=to_user.id)
 
             output = []
             # this is formatting the data to be sent out\
-            
+
             for msg in all_messages:
                 output.append({"from": from_user.name,
                                         "to": to_user.name,
                                         "message": msg.msg })
             return output
-        
+
         elif action == 'post': #inserting new msg
             data = json.loads(request.data)
             from_user_name = json.loads(request.data)['from_user_name']
             to_user_name = json.loads(request.data)['to_user_name']
             msg = data['msg']
-            
+
             user_cred_from = UsersLogIn.query.filter_by(username=from_user_name).first()
             user_cred_to = UsersLogIn.query.filter_by(username=to_user_name).first()
-            
+
             user_info_from = UserInfo.query.filter_by(user_id=user_cred_from.id).first()
             user_info_to = UserInfo.query.filter_by(user_id=user_cred_to.id).first()
-            
+
             from_user = UserInfo.query.filter_by(id=user_info_from.id).first()
             to_user_id =  UserInfo.query.filter_by(id=user_info_to.id).first()
-            
+
             message_entry = Messages(from_user = from_user.id, to_user = to_user_id.id,msg = msg)
             db.session.add(message_entry)
             db.session.commit()
             return 'success on sending the msg'
 
+class userAPI(Resource):
+    def post(self):
+        data = json.loads(request.data)
+        team_id = data['team_id']
+        try:
+            user_info = UserInfo.query.filter_by(team_id=int(team_id)).all()
+            output = []
+            for user in user_info:
+                tickets = TicketTracker.query.filter_by(assigned_user_id=user.id).first()
+                if tickets is None:
+                    output.append({"id":user.id, "name":user.name})
+            return output
+
+        except:
+            return "{}"
 
 api.add_resource(TicketsAPI, '/tickets_api')
 api.add_resource(LoginAPI, '/login')
 api.add_resource(CreateUser, '/create_user')
 api.add_resource(TeamAPI, '/team_info')
 api.add_resource(MessagesAPI, '/messages')
-
+api.add_resource(userAPI, '/users')
 
 
 

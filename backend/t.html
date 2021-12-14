@@ -17,16 +17,35 @@
 </body>
 <script>
     function f() {
-        const xhttp = new XMLHttpRequest();
-        const method = "GET";
-
-        const url = "http://127.0.0.1:5000/setcookie";
-        const async = true;
-        xhttp.open(method, url, async);
-        xhttp.send();
-        xhttp.onload = function() {
-            console.log(this.responseText);
-        };
+        $.ajax({
+            type: "GET",
+            url: "http://127.0.0.1:5000/team_info",
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("Cookie", "session=xxxyyyzzz");
+            },
+            success: function() {
+                alert('success');
+            },
+            error: function(xhr) {
+                alert(xhr.responseText);
+            }
+        });
+        // const xhttp = new XMLHttpRequest();
+        // const method = "GET";
+        // crossDomain: true
+        // xhttp: { withCredentials: true }
+        // const url = "http://127.0.0.1:5000/team_info";
+        // const async = true;
+        // xhttp.open(method, url, async);
+        // xhttp.send();
+        // xhttp.onload = function() {
+        //     console.log(this.responseText);
+        // };
     }
 
     function a() {
@@ -48,23 +67,42 @@
     }
 
     function login() {
-        const username = 'admin';
-        const password = '1';
-        const json_datav2 = {
-            username: username,
-            password: String(password),
-        };
+        $.ajax({
+            type: "POST",
+            url: "http://127.0.0.1:5000/login",
+            dataType: 'json',
+            xhrFields: {
+                withCredentials: true
+            },
+            crossDomain: true,
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("Cookie", "session=xxxyyyzzz");
+            },
 
-        const xhttp = new XMLHttpRequest();
-        const method = "POST";
-        const url = "http://127.0.0.1:5000/login";
+            success: function() {
+                alert('success');
+            },
+            error: function(xhr) {
+                alert(xhr.responseText);
+            }
+        });
+        // const username = 'admin';
+        // const password = '1';
+        // const json_datav2 = {
+        //     username: username,
+        //     password: String(password),
+        // };
 
-        const async = true;
-        xhttp.open(method, url, async);
-        console.log(JSON.stringify(json_datav2));
-        xhttp.send(JSON.stringify(json_datav2));
-        xhttp.onload = function() {
-            console.log(this.responseText);
-        };
+        // const xhttp = new XMLHttpRequest();
+        // const method = "POST";
+        // const url = "http://127.0.0.1:5000/login";
+
+        // const async = true;
+        // xhttp.open(method, url, async);
+        // console.log(JSON.stringify(json_datav2));
+        // xhttp.send(JSON.stringify(json_datav2));
+        // xhttp.onload = function() {
+        //     console.log(this.responseText);
+        // };
     }
 </script>
